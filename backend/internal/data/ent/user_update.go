@@ -117,6 +117,20 @@ func (_u *UserUpdate) SetNillableSuperuser(v *bool) *UserUpdate {
 	return _u
 }
 
+// SetAccountRole sets the "account_role" field.
+func (_u *UserUpdate) SetAccountRole(v user.AccountRole) *UserUpdate {
+	_u.mutation.SetAccountRole(v)
+	return _u
+}
+
+// SetNillableAccountRole sets the "account_role" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableAccountRole(v *user.AccountRole) *UserUpdate {
+	if v != nil {
+		_u.SetAccountRole(*v)
+	}
+	return _u
+}
+
 // SetActivatedOn sets the "activated_on" field.
 func (_u *UserUpdate) SetActivatedOn(v time.Time) *UserUpdate {
 	_u.mutation.SetActivatedOn(v)
@@ -224,6 +238,36 @@ func (_u *UserUpdate) AddGroups(v ...*Group) *UserUpdate {
 	return _u.AddGroupIDs(ids...)
 }
 
+// AddSubordinateIDs adds the "subordinates" edge to the User entity by IDs.
+func (_u *UserUpdate) AddSubordinateIDs(ids ...uuid.UUID) *UserUpdate {
+	_u.mutation.AddSubordinateIDs(ids...)
+	return _u
+}
+
+// AddSubordinates adds the "subordinates" edges to the User entity.
+func (_u *UserUpdate) AddSubordinates(v ...*User) *UserUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddSubordinateIDs(ids...)
+}
+
+// AddSupervisorIDs adds the "supervisors" edge to the User entity by IDs.
+func (_u *UserUpdate) AddSupervisorIDs(ids ...uuid.UUID) *UserUpdate {
+	_u.mutation.AddSupervisorIDs(ids...)
+	return _u
+}
+
+// AddSupervisors adds the "supervisors" edges to the User entity.
+func (_u *UserUpdate) AddSupervisors(v ...*User) *UserUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddSupervisorIDs(ids...)
+}
+
 // AddAuthTokenIDs adds the "auth_tokens" edge to the AuthTokens entity by IDs.
 func (_u *UserUpdate) AddAuthTokenIDs(ids ...uuid.UUID) *UserUpdate {
 	_u.mutation.AddAuthTokenIDs(ids...)
@@ -323,6 +367,48 @@ func (_u *UserUpdate) RemoveGroups(v ...*Group) *UserUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveGroupIDs(ids...)
+}
+
+// ClearSubordinates clears all "subordinates" edges to the User entity.
+func (_u *UserUpdate) ClearSubordinates() *UserUpdate {
+	_u.mutation.ClearSubordinates()
+	return _u
+}
+
+// RemoveSubordinateIDs removes the "subordinates" edge to User entities by IDs.
+func (_u *UserUpdate) RemoveSubordinateIDs(ids ...uuid.UUID) *UserUpdate {
+	_u.mutation.RemoveSubordinateIDs(ids...)
+	return _u
+}
+
+// RemoveSubordinates removes "subordinates" edges to User entities.
+func (_u *UserUpdate) RemoveSubordinates(v ...*User) *UserUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveSubordinateIDs(ids...)
+}
+
+// ClearSupervisors clears all "supervisors" edges to the User entity.
+func (_u *UserUpdate) ClearSupervisors() *UserUpdate {
+	_u.mutation.ClearSupervisors()
+	return _u
+}
+
+// RemoveSupervisorIDs removes the "supervisors" edge to User entities by IDs.
+func (_u *UserUpdate) RemoveSupervisorIDs(ids ...uuid.UUID) *UserUpdate {
+	_u.mutation.RemoveSupervisorIDs(ids...)
+	return _u
+}
+
+// RemoveSupervisors removes "supervisors" edges to User entities.
+func (_u *UserUpdate) RemoveSupervisors(v ...*User) *UserUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveSupervisorIDs(ids...)
 }
 
 // ClearAuthTokens clears all "auth_tokens" edges to the AuthTokens entity.
@@ -483,6 +569,11 @@ func (_u *UserUpdate) check() error {
 			return &ValidationError{Name: "password", err: fmt.Errorf(`ent: validator failed for field "User.password": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.AccountRole(); ok {
+		if err := user.AccountRoleValidator(v); err != nil {
+			return &ValidationError{Name: "account_role", err: fmt.Errorf(`ent: validator failed for field "User.account_role": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -518,6 +609,9 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.Superuser(); ok {
 		_spec.SetField(user.FieldSuperuser, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.AccountRole(); ok {
+		_spec.SetField(user.FieldAccountRole, field.TypeEnum, value)
 	}
 	if value, ok := _u.mutation.ActivatedOn(); ok {
 		_spec.SetField(user.FieldActivatedOn, field.TypeTime, value)
@@ -604,6 +698,96 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.SubordinatesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   user.SubordinatesTable,
+			Columns: user.SubordinatesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedSubordinatesIDs(); len(nodes) > 0 && !_u.mutation.SubordinatesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   user.SubordinatesTable,
+			Columns: user.SubordinatesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.SubordinatesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   user.SubordinatesTable,
+			Columns: user.SubordinatesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.SupervisorsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   user.SupervisorsTable,
+			Columns: user.SupervisorsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedSupervisorsIDs(); len(nodes) > 0 && !_u.mutation.SupervisorsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   user.SupervisorsTable,
+			Columns: user.SupervisorsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.SupervisorsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   user.SupervisorsTable,
+			Columns: user.SupervisorsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if _u.mutation.AuthTokensCleared() {
@@ -933,6 +1117,20 @@ func (_u *UserUpdateOne) SetNillableSuperuser(v *bool) *UserUpdateOne {
 	return _u
 }
 
+// SetAccountRole sets the "account_role" field.
+func (_u *UserUpdateOne) SetAccountRole(v user.AccountRole) *UserUpdateOne {
+	_u.mutation.SetAccountRole(v)
+	return _u
+}
+
+// SetNillableAccountRole sets the "account_role" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableAccountRole(v *user.AccountRole) *UserUpdateOne {
+	if v != nil {
+		_u.SetAccountRole(*v)
+	}
+	return _u
+}
+
 // SetActivatedOn sets the "activated_on" field.
 func (_u *UserUpdateOne) SetActivatedOn(v time.Time) *UserUpdateOne {
 	_u.mutation.SetActivatedOn(v)
@@ -1040,6 +1238,36 @@ func (_u *UserUpdateOne) AddGroups(v ...*Group) *UserUpdateOne {
 	return _u.AddGroupIDs(ids...)
 }
 
+// AddSubordinateIDs adds the "subordinates" edge to the User entity by IDs.
+func (_u *UserUpdateOne) AddSubordinateIDs(ids ...uuid.UUID) *UserUpdateOne {
+	_u.mutation.AddSubordinateIDs(ids...)
+	return _u
+}
+
+// AddSubordinates adds the "subordinates" edges to the User entity.
+func (_u *UserUpdateOne) AddSubordinates(v ...*User) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddSubordinateIDs(ids...)
+}
+
+// AddSupervisorIDs adds the "supervisors" edge to the User entity by IDs.
+func (_u *UserUpdateOne) AddSupervisorIDs(ids ...uuid.UUID) *UserUpdateOne {
+	_u.mutation.AddSupervisorIDs(ids...)
+	return _u
+}
+
+// AddSupervisors adds the "supervisors" edges to the User entity.
+func (_u *UserUpdateOne) AddSupervisors(v ...*User) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddSupervisorIDs(ids...)
+}
+
 // AddAuthTokenIDs adds the "auth_tokens" edge to the AuthTokens entity by IDs.
 func (_u *UserUpdateOne) AddAuthTokenIDs(ids ...uuid.UUID) *UserUpdateOne {
 	_u.mutation.AddAuthTokenIDs(ids...)
@@ -1139,6 +1367,48 @@ func (_u *UserUpdateOne) RemoveGroups(v ...*Group) *UserUpdateOne {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveGroupIDs(ids...)
+}
+
+// ClearSubordinates clears all "subordinates" edges to the User entity.
+func (_u *UserUpdateOne) ClearSubordinates() *UserUpdateOne {
+	_u.mutation.ClearSubordinates()
+	return _u
+}
+
+// RemoveSubordinateIDs removes the "subordinates" edge to User entities by IDs.
+func (_u *UserUpdateOne) RemoveSubordinateIDs(ids ...uuid.UUID) *UserUpdateOne {
+	_u.mutation.RemoveSubordinateIDs(ids...)
+	return _u
+}
+
+// RemoveSubordinates removes "subordinates" edges to User entities.
+func (_u *UserUpdateOne) RemoveSubordinates(v ...*User) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveSubordinateIDs(ids...)
+}
+
+// ClearSupervisors clears all "supervisors" edges to the User entity.
+func (_u *UserUpdateOne) ClearSupervisors() *UserUpdateOne {
+	_u.mutation.ClearSupervisors()
+	return _u
+}
+
+// RemoveSupervisorIDs removes the "supervisors" edge to User entities by IDs.
+func (_u *UserUpdateOne) RemoveSupervisorIDs(ids ...uuid.UUID) *UserUpdateOne {
+	_u.mutation.RemoveSupervisorIDs(ids...)
+	return _u
+}
+
+// RemoveSupervisors removes "supervisors" edges to User entities.
+func (_u *UserUpdateOne) RemoveSupervisors(v ...*User) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveSupervisorIDs(ids...)
 }
 
 // ClearAuthTokens clears all "auth_tokens" edges to the AuthTokens entity.
@@ -1312,6 +1582,11 @@ func (_u *UserUpdateOne) check() error {
 			return &ValidationError{Name: "password", err: fmt.Errorf(`ent: validator failed for field "User.password": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.AccountRole(); ok {
+		if err := user.AccountRoleValidator(v); err != nil {
+			return &ValidationError{Name: "account_role", err: fmt.Errorf(`ent: validator failed for field "User.account_role": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -1364,6 +1639,9 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 	}
 	if value, ok := _u.mutation.Superuser(); ok {
 		_spec.SetField(user.FieldSuperuser, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.AccountRole(); ok {
+		_spec.SetField(user.FieldAccountRole, field.TypeEnum, value)
 	}
 	if value, ok := _u.mutation.ActivatedOn(); ok {
 		_spec.SetField(user.FieldActivatedOn, field.TypeTime, value)
@@ -1450,6 +1728,96 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 		createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.SubordinatesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   user.SubordinatesTable,
+			Columns: user.SubordinatesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedSubordinatesIDs(); len(nodes) > 0 && !_u.mutation.SubordinatesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   user.SubordinatesTable,
+			Columns: user.SubordinatesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.SubordinatesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   user.SubordinatesTable,
+			Columns: user.SubordinatesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.SupervisorsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   user.SupervisorsTable,
+			Columns: user.SupervisorsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedSupervisorsIDs(); len(nodes) > 0 && !_u.mutation.SupervisorsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   user.SupervisorsTable,
+			Columns: user.SupervisorsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.SupervisorsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   user.SupervisorsTable,
+			Columns: user.SupervisorsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if _u.mutation.AuthTokensCleared() {

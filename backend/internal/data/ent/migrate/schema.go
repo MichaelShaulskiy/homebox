@@ -829,6 +829,7 @@ var (
 		{Name: "password", Type: field.TypeString, Nullable: true, Size: 255},
 		{Name: "is_superuser", Type: field.TypeBool, Default: false},
 		{Name: "superuser", Type: field.TypeBool, Default: false},
+		{Name: "account_role", Type: field.TypeEnum, Enums: []string{"superadmin", "admin", "user"}, Default: "user"},
 		{Name: "activated_on", Type: field.TypeTime, Nullable: true},
 		{Name: "oidc_issuer", Type: field.TypeString, Nullable: true},
 		{Name: "oidc_subject", Type: field.TypeString, Nullable: true},
@@ -844,7 +845,7 @@ var (
 			{
 				Name:    "user_oidc_issuer_oidc_subject",
 				Unique:  true,
-				Columns: []*schema.Column{UsersColumns[9], UsersColumns[10]},
+				Columns: []*schema.Column{UsersColumns[10], UsersColumns[11]},
 			},
 		},
 	}
@@ -899,6 +900,31 @@ var (
 			},
 		},
 	}
+	// UserSupervisorsColumns holds the columns for the "user_supervisors" table.
+	UserSupervisorsColumns = []*schema.Column{
+		{Name: "user_id", Type: field.TypeUUID},
+		{Name: "subordinate_id", Type: field.TypeUUID},
+	}
+	// UserSupervisorsTable holds the schema information for the "user_supervisors" table.
+	UserSupervisorsTable = &schema.Table{
+		Name:       "user_supervisors",
+		Columns:    UserSupervisorsColumns,
+		PrimaryKey: []*schema.Column{UserSupervisorsColumns[0], UserSupervisorsColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "user_supervisors_user_id",
+				Columns:    []*schema.Column{UserSupervisorsColumns[0]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "user_supervisors_subordinate_id",
+				Columns:    []*schema.Column{UserSupervisorsColumns[1]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		APIKeysTable,
@@ -924,6 +950,7 @@ var (
 		UsersTable,
 		UserGroupsTable,
 		TagEntitiesTable,
+		UserSupervisorsTable,
 	}
 )
 
@@ -967,4 +994,6 @@ func init() {
 	}
 	TagEntitiesTable.ForeignKeys[0].RefTable = TagsTable
 	TagEntitiesTable.ForeignKeys[1].RefTable = EntitiesTable
+	UserSupervisorsTable.ForeignKeys[0].RefTable = UsersTable
+	UserSupervisorsTable.ForeignKeys[1].RefTable = UsersTable
 }

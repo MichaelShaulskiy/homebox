@@ -58,6 +58,10 @@
 
   const route = useRoute();
   const api = useUserApi();
+  const auth = useAuthContext();
+  const canManageInventory = computed(
+    () => auth.user?.accountRole === "admin" || auth.user?.accountRole === "superadmin" || auth.user?.isSuperuser
+  );
 
   const itemId = computed<string>(() => route.params.id as string);
   const preferences = useViewPreferences();
@@ -883,6 +887,7 @@
               <div class="flex items-center">
                 {{ detail.text }}
                 <span
+                  v-if="canManageInventory"
                   class="my-0 ml-4 inline-flex gap-2 opacity-10 transition-opacity duration-75 group-hover:opacity-100"
                 >
                   <Button size="icon" variant="outline" class="size-8 rounded-full" @click="adjustQuantity(-1)">
@@ -897,7 +902,7 @@
           </DetailsSection>
         </BaseCard>
 
-        <BaseCard v-if="!hasNested" collapsable>
+        <BaseCard v-if="!hasNested && canManageInventory" collapsable>
           <template #title>{{ $t("inventory.title") }}</template>
           <div class="grid gap-4 p-4 lg:grid-cols-2">
             <div>

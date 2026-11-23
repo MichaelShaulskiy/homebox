@@ -21275,6 +21275,7 @@ type UserMutation struct {
 	password                     *string
 	is_superuser                 *bool
 	superuser                    *bool
+	account_role                 *user.AccountRole
 	activated_on                 *time.Time
 	oidc_issuer                  *string
 	oidc_subject                 *string
@@ -21284,6 +21285,12 @@ type UserMutation struct {
 	groups                       map[uuid.UUID]struct{}
 	removedgroups                map[uuid.UUID]struct{}
 	clearedgroups                bool
+	subordinates                 map[uuid.UUID]struct{}
+	removedsubordinates          map[uuid.UUID]struct{}
+	clearedsubordinates          bool
+	supervisors                  map[uuid.UUID]struct{}
+	removedsupervisors           map[uuid.UUID]struct{}
+	clearedsupervisors           bool
 	auth_tokens                  map[uuid.UUID]struct{}
 	removedauth_tokens           map[uuid.UUID]struct{}
 	clearedauth_tokens           bool
@@ -21673,6 +21680,42 @@ func (m *UserMutation) ResetSuperuser() {
 	m.superuser = nil
 }
 
+// SetAccountRole sets the "account_role" field.
+func (m *UserMutation) SetAccountRole(ur user.AccountRole) {
+	m.account_role = &ur
+}
+
+// AccountRole returns the value of the "account_role" field in the mutation.
+func (m *UserMutation) AccountRole() (r user.AccountRole, exists bool) {
+	v := m.account_role
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAccountRole returns the old "account_role" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldAccountRole(ctx context.Context) (v user.AccountRole, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAccountRole is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAccountRole requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAccountRole: %w", err)
+	}
+	return oldValue.AccountRole, nil
+}
+
+// ResetAccountRole resets all changes to the "account_role" field.
+func (m *UserMutation) ResetAccountRole() {
+	m.account_role = nil
+}
+
 // SetActivatedOn sets the "activated_on" field.
 func (m *UserMutation) SetActivatedOn(t time.Time) {
 	m.activated_on = &t
@@ -21970,6 +22013,114 @@ func (m *UserMutation) ResetGroups() {
 	m.groups = nil
 	m.clearedgroups = false
 	m.removedgroups = nil
+}
+
+// AddSubordinateIDs adds the "subordinates" edge to the User entity by ids.
+func (m *UserMutation) AddSubordinateIDs(ids ...uuid.UUID) {
+	if m.subordinates == nil {
+		m.subordinates = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.subordinates[ids[i]] = struct{}{}
+	}
+}
+
+// ClearSubordinates clears the "subordinates" edge to the User entity.
+func (m *UserMutation) ClearSubordinates() {
+	m.clearedsubordinates = true
+}
+
+// SubordinatesCleared reports if the "subordinates" edge to the User entity was cleared.
+func (m *UserMutation) SubordinatesCleared() bool {
+	return m.clearedsubordinates
+}
+
+// RemoveSubordinateIDs removes the "subordinates" edge to the User entity by IDs.
+func (m *UserMutation) RemoveSubordinateIDs(ids ...uuid.UUID) {
+	if m.removedsubordinates == nil {
+		m.removedsubordinates = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.subordinates, ids[i])
+		m.removedsubordinates[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedSubordinates returns the removed IDs of the "subordinates" edge to the User entity.
+func (m *UserMutation) RemovedSubordinatesIDs() (ids []uuid.UUID) {
+	for id := range m.removedsubordinates {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// SubordinatesIDs returns the "subordinates" edge IDs in the mutation.
+func (m *UserMutation) SubordinatesIDs() (ids []uuid.UUID) {
+	for id := range m.subordinates {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetSubordinates resets all changes to the "subordinates" edge.
+func (m *UserMutation) ResetSubordinates() {
+	m.subordinates = nil
+	m.clearedsubordinates = false
+	m.removedsubordinates = nil
+}
+
+// AddSupervisorIDs adds the "supervisors" edge to the User entity by ids.
+func (m *UserMutation) AddSupervisorIDs(ids ...uuid.UUID) {
+	if m.supervisors == nil {
+		m.supervisors = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.supervisors[ids[i]] = struct{}{}
+	}
+}
+
+// ClearSupervisors clears the "supervisors" edge to the User entity.
+func (m *UserMutation) ClearSupervisors() {
+	m.clearedsupervisors = true
+}
+
+// SupervisorsCleared reports if the "supervisors" edge to the User entity was cleared.
+func (m *UserMutation) SupervisorsCleared() bool {
+	return m.clearedsupervisors
+}
+
+// RemoveSupervisorIDs removes the "supervisors" edge to the User entity by IDs.
+func (m *UserMutation) RemoveSupervisorIDs(ids ...uuid.UUID) {
+	if m.removedsupervisors == nil {
+		m.removedsupervisors = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.supervisors, ids[i])
+		m.removedsupervisors[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedSupervisors returns the removed IDs of the "supervisors" edge to the User entity.
+func (m *UserMutation) RemovedSupervisorsIDs() (ids []uuid.UUID) {
+	for id := range m.removedsupervisors {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// SupervisorsIDs returns the "supervisors" edge IDs in the mutation.
+func (m *UserMutation) SupervisorsIDs() (ids []uuid.UUID) {
+	for id := range m.supervisors {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetSupervisors resets all changes to the "supervisors" edge.
+func (m *UserMutation) ResetSupervisors() {
+	m.supervisors = nil
+	m.clearedsupervisors = false
+	m.removedsupervisors = nil
 }
 
 // AddAuthTokenIDs adds the "auth_tokens" edge to the AuthTokens entity by ids.
@@ -22276,7 +22427,7 @@ func (m *UserMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserMutation) Fields() []string {
-	fields := make([]string, 0, 12)
+	fields := make([]string, 0, 13)
 	if m.created_at != nil {
 		fields = append(fields, user.FieldCreatedAt)
 	}
@@ -22297,6 +22448,9 @@ func (m *UserMutation) Fields() []string {
 	}
 	if m.superuser != nil {
 		fields = append(fields, user.FieldSuperuser)
+	}
+	if m.account_role != nil {
+		fields = append(fields, user.FieldAccountRole)
 	}
 	if m.activated_on != nil {
 		fields = append(fields, user.FieldActivatedOn)
@@ -22335,6 +22489,8 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 		return m.IsSuperuser()
 	case user.FieldSuperuser:
 		return m.Superuser()
+	case user.FieldAccountRole:
+		return m.AccountRole()
 	case user.FieldActivatedOn:
 		return m.ActivatedOn()
 	case user.FieldOidcIssuer:
@@ -22368,6 +22524,8 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldIsSuperuser(ctx)
 	case user.FieldSuperuser:
 		return m.OldSuperuser(ctx)
+	case user.FieldAccountRole:
+		return m.OldAccountRole(ctx)
 	case user.FieldActivatedOn:
 		return m.OldActivatedOn(ctx)
 	case user.FieldOidcIssuer:
@@ -22435,6 +22593,13 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetSuperuser(v)
+		return nil
+	case user.FieldAccountRole:
+		v, ok := value.(user.AccountRole)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAccountRole(v)
 		return nil
 	case user.FieldActivatedOn:
 		v, ok := value.(time.Time)
@@ -22580,6 +22745,9 @@ func (m *UserMutation) ResetField(name string) error {
 	case user.FieldSuperuser:
 		m.ResetSuperuser()
 		return nil
+	case user.FieldAccountRole:
+		m.ResetAccountRole()
+		return nil
 	case user.FieldActivatedOn:
 		m.ResetActivatedOn()
 		return nil
@@ -22601,9 +22769,15 @@ func (m *UserMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *UserMutation) AddedEdges() []string {
-	edges := make([]string, 0, 6)
+	edges := make([]string, 0, 8)
 	if m.groups != nil {
 		edges = append(edges, user.EdgeGroups)
+	}
+	if m.subordinates != nil {
+		edges = append(edges, user.EdgeSubordinates)
+	}
+	if m.supervisors != nil {
+		edges = append(edges, user.EdgeSupervisors)
 	}
 	if m.auth_tokens != nil {
 		edges = append(edges, user.EdgeAuthTokens)
@@ -22630,6 +22804,18 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 	case user.EdgeGroups:
 		ids := make([]ent.Value, 0, len(m.groups))
 		for id := range m.groups {
+			ids = append(ids, id)
+		}
+		return ids
+	case user.EdgeSubordinates:
+		ids := make([]ent.Value, 0, len(m.subordinates))
+		for id := range m.subordinates {
+			ids = append(ids, id)
+		}
+		return ids
+	case user.EdgeSupervisors:
+		ids := make([]ent.Value, 0, len(m.supervisors))
+		for id := range m.supervisors {
 			ids = append(ids, id)
 		}
 		return ids
@@ -22669,9 +22855,15 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *UserMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 6)
+	edges := make([]string, 0, 8)
 	if m.removedgroups != nil {
 		edges = append(edges, user.EdgeGroups)
+	}
+	if m.removedsubordinates != nil {
+		edges = append(edges, user.EdgeSubordinates)
+	}
+	if m.removedsupervisors != nil {
+		edges = append(edges, user.EdgeSupervisors)
 	}
 	if m.removedauth_tokens != nil {
 		edges = append(edges, user.EdgeAuthTokens)
@@ -22698,6 +22890,18 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 	case user.EdgeGroups:
 		ids := make([]ent.Value, 0, len(m.removedgroups))
 		for id := range m.removedgroups {
+			ids = append(ids, id)
+		}
+		return ids
+	case user.EdgeSubordinates:
+		ids := make([]ent.Value, 0, len(m.removedsubordinates))
+		for id := range m.removedsubordinates {
+			ids = append(ids, id)
+		}
+		return ids
+	case user.EdgeSupervisors:
+		ids := make([]ent.Value, 0, len(m.removedsupervisors))
+		for id := range m.removedsupervisors {
 			ids = append(ids, id)
 		}
 		return ids
@@ -22737,9 +22941,15 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *UserMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 6)
+	edges := make([]string, 0, 8)
 	if m.clearedgroups {
 		edges = append(edges, user.EdgeGroups)
+	}
+	if m.clearedsubordinates {
+		edges = append(edges, user.EdgeSubordinates)
+	}
+	if m.clearedsupervisors {
+		edges = append(edges, user.EdgeSupervisors)
 	}
 	if m.clearedauth_tokens {
 		edges = append(edges, user.EdgeAuthTokens)
@@ -22765,6 +22975,10 @@ func (m *UserMutation) EdgeCleared(name string) bool {
 	switch name {
 	case user.EdgeGroups:
 		return m.clearedgroups
+	case user.EdgeSubordinates:
+		return m.clearedsubordinates
+	case user.EdgeSupervisors:
+		return m.clearedsupervisors
 	case user.EdgeAuthTokens:
 		return m.clearedauth_tokens
 	case user.EdgePasswordResetTokens:
@@ -22793,6 +23007,12 @@ func (m *UserMutation) ResetEdge(name string) error {
 	switch name {
 	case user.EdgeGroups:
 		m.ResetGroups()
+		return nil
+	case user.EdgeSubordinates:
+		m.ResetSubordinates()
+		return nil
+	case user.EdgeSupervisors:
+		m.ResetSupervisors()
 		return nil
 	case user.EdgeAuthTokens:
 		m.ResetAuthTokens()

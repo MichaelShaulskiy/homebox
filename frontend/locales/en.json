@@ -1173,6 +1173,18 @@
         "defective": "Defective",
         "issued": "Issued"
     },
+    "accounts": {
+        "title": "Accounts",
+        "create": "Create account",
+        "name": "Name",
+        "email": "Email",
+        "password": "Password",
+        "role": "Account type",
+        "supervisors": "Supervisors",
+        "superadmin": "SuperAdmin",
+        "admin": "Admin",
+        "user": "User"
+    },
     "menu": {
         "collection": "Collection",
         "create_item": "Item / Asset",

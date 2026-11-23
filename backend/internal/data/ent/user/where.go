@@ -416,6 +416,26 @@ func SuperuserNEQ(v bool) predicate.User {
 	return predicate.User(sql.FieldNEQ(FieldSuperuser, v))
 }
 
+// AccountRoleEQ applies the EQ predicate on the "account_role" field.
+func AccountRoleEQ(v AccountRole) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldAccountRole, v))
+}
+
+// AccountRoleNEQ applies the NEQ predicate on the "account_role" field.
+func AccountRoleNEQ(v AccountRole) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldAccountRole, v))
+}
+
+// AccountRoleIn applies the In predicate on the "account_role" field.
+func AccountRoleIn(vs ...AccountRole) predicate.User {
+	return predicate.User(sql.FieldIn(FieldAccountRole, vs...))
+}
+
+// AccountRoleNotIn applies the NotIn predicate on the "account_role" field.
+func AccountRoleNotIn(vs ...AccountRole) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldAccountRole, vs...))
+}
+
 // ActivatedOnEQ applies the EQ predicate on the "activated_on" field.
 func ActivatedOnEQ(v time.Time) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldActivatedOn, v))
@@ -691,6 +711,52 @@ func HasGroups() predicate.User {
 func HasGroupsWith(preds ...predicate.Group) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		step := newGroupsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasSubordinates applies the HasEdge predicate on the "subordinates" edge.
+func HasSubordinates() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, SubordinatesTable, SubordinatesPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasSubordinatesWith applies the HasEdge predicate on the "subordinates" edge with a given conditions (other predicates).
+func HasSubordinatesWith(preds ...predicate.User) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := newSubordinatesStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasSupervisors applies the HasEdge predicate on the "supervisors" edge.
+func HasSupervisors() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, SupervisorsTable, SupervisorsPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasSupervisorsWith applies the HasEdge predicate on the "supervisors" edge with a given conditions (other predicates).
+func HasSupervisorsWith(preds ...predicate.User) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := newSupervisorsStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

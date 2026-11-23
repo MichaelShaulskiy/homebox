@@ -3,6 +3,7 @@
 package user
 
 import (
+	"fmt"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
@@ -29,6 +30,8 @@ const (
 	FieldIsSuperuser = "is_superuser"
 	// FieldSuperuser holds the string denoting the superuser field in the database.
 	FieldSuperuser = "superuser"
+	// FieldAccountRole holds the string denoting the account_role field in the database.
+	FieldAccountRole = "account_role"
 	// FieldActivatedOn holds the string denoting the activated_on field in the database.
 	FieldActivatedOn = "activated_on"
 	// FieldOidcIssuer holds the string denoting the oidc_issuer field in the database.
@@ -41,6 +44,10 @@ const (
 	FieldSettings = "settings"
 	// EdgeGroups holds the string denoting the groups edge name in mutations.
 	EdgeGroups = "groups"
+	// EdgeSubordinates holds the string denoting the subordinates edge name in mutations.
+	EdgeSubordinates = "subordinates"
+	// EdgeSupervisors holds the string denoting the supervisors edge name in mutations.
+	EdgeSupervisors = "supervisors"
 	// EdgeAuthTokens holds the string denoting the auth_tokens edge name in mutations.
 	EdgeAuthTokens = "auth_tokens"
 	// EdgePasswordResetTokens holds the string denoting the password_reset_tokens edge name in mutations.
@@ -60,6 +67,10 @@ const (
 	// GroupsInverseTable is the table name for the Group entity.
 	// It exists in this package in order to avoid circular dependency with the "group" package.
 	GroupsInverseTable = "groups"
+	// SubordinatesTable is the table that holds the subordinates relation/edge. The primary key declared below.
+	SubordinatesTable = "user_supervisors"
+	// SupervisorsTable is the table that holds the supervisors relation/edge. The primary key declared below.
+	SupervisorsTable = "user_supervisors"
 	// AuthTokensTable is the table that holds the auth_tokens relation/edge.
 	AuthTokensTable = "auth_tokens"
 	// AuthTokensInverseTable is the table name for the AuthTokens entity.
@@ -114,6 +125,7 @@ var Columns = []string{
 	FieldPassword,
 	FieldIsSuperuser,
 	FieldSuperuser,
+	FieldAccountRole,
 	FieldActivatedOn,
 	FieldOidcIssuer,
 	FieldOidcSubject,
@@ -125,6 +137,12 @@ var (
 	// GroupsPrimaryKey and GroupsColumn2 are the table columns denoting the
 	// primary key for the groups relation (M2M).
 	GroupsPrimaryKey = []string{"user_id", "group_id"}
+	// SubordinatesPrimaryKey and SubordinatesColumn2 are the table columns denoting the
+	// primary key for the subordinates relation (M2M).
+	SubordinatesPrimaryKey = []string{"user_id", "subordinate_id"}
+	// SupervisorsPrimaryKey and SupervisorsColumn2 are the table columns denoting the
+	// primary key for the supervisors relation (M2M).
+	SupervisorsPrimaryKey = []string{"user_id", "subordinate_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -157,6 +175,33 @@ var (
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
+
+// AccountRole defines the type for the "account_role" enum field.
+type AccountRole string
+
+// AccountRoleUser is the default value of the AccountRole enum.
+const DefaultAccountRole = AccountRoleUser
+
+// AccountRole values.
+const (
+	AccountRoleSuperadmin AccountRole = "superadmin"
+	AccountRoleAdmin      AccountRole = "admin"
+	AccountRoleUser       AccountRole = "user"
+)
+
+func (ar AccountRole) String() string {
+	return string(ar)
+}
+
+// AccountRoleValidator is a validator for the "account_role" field enum values. It is called by the builders before save.
+func AccountRoleValidator(ar AccountRole) error {
+	switch ar {
+	case AccountRoleSuperadmin, AccountRoleAdmin, AccountRoleUser:
+		return nil
+	default:
+		return fmt.Errorf("user: invalid enum value for account_role field: %q", ar)
+	}
+}
 
 // OrderOption defines the ordering options for the User queries.
 type OrderOption func(*sql.Selector)
@@ -201,6 +246,11 @@ func BySuperuser(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldSuperuser, opts...).ToFunc()
 }
 
+// ByAccountRole orders the results by the account_role field.
+func ByAccountRole(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAccountRole, opts...).ToFunc()
+}
+
 // ByActivatedOn orders the results by the activated_on field.
 func ByActivatedOn(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldActivatedOn, opts...).ToFunc()
@@ -232,6 +282,34 @@ func ByGroupsCount(opts ...sql.OrderTermOption) OrderOption {
 func ByGroups(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newGroupsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// BySubordinatesCount orders the results by subordinates count.
+func BySubordinatesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newSubordinatesStep(), opts...)
+	}
+}
+
+// BySubordinates orders the results by subordinates terms.
+func BySubordinates(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newSubordinatesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// BySupervisorsCount orders the results by supervisors count.
+func BySupervisorsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newSupervisorsStep(), opts...)
+	}
+}
+
+// BySupervisors orders the results by supervisors terms.
+func BySupervisors(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newSupervisorsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 
@@ -323,6 +401,20 @@ func newGroupsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(GroupsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2M, false, GroupsTable, GroupsPrimaryKey...),
+	)
+}
+func newSubordinatesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(Table, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, true, SubordinatesTable, SubordinatesPrimaryKey...),
+	)
+}
+func newSupervisorsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(Table, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, false, SupervisorsTable, SupervisorsPrimaryKey...),
 	)
 }
 func newAuthTokensStep() *sqlgraph.Step {

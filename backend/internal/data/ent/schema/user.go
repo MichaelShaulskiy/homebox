@@ -41,6 +41,9 @@ func (User) Fields() []ent.Field {
 			Default(false),
 		field.Bool("superuser").
 			Default(false),
+		field.Enum("account_role").
+			Values("superadmin", "admin", "user").
+			Default("user"),
 		field.Time("activated_on").
 			Optional(),
 		// OIDC identity mapping fields (issuer + subject)
@@ -70,6 +73,8 @@ func (User) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("groups", Group.Type).
 			Through("user_groups", UserGroup.Type),
+		edge.To("supervisors", User.Type).
+			From("subordinates"),
 		edge.To("auth_tokens", AuthTokens.Type).
 			Annotations(entsql.Annotation{
 				OnDelete: entsql.Cascade,

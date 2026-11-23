@@ -209,16 +209,6 @@ func CheckPasswordHashCtx(ctx context.Context, password, hash string) (bool, boo
 		))
 	defer span.End()
 
-	if !enabled {
-		matched := password == hash
-		span.SetAttributes(
-			attribute.String("password.algorithm", "plaintext-disabled"),
-			attribute.Bool("password.match", matched),
-			attribute.String("password.outcome", outcomeForMatch(matched, "plaintext-disabled")),
-		)
-		return matched, false
-	}
-
 	match, decodeErr, compareErr := comparePasswordAndHash(ctx, password, hash)
 	span.SetAttributes(
 		attribute.Bool("password.argon2.decode_ok", decodeErr == nil),
@@ -271,6 +261,16 @@ func CheckPasswordHashCtx(ctx context.Context, password, hash string) (bool, boo
 			attribute.String("password.outcome", "bcrypt_match_needs_rehash"),
 		)
 		return true, true
+	}
+
+	if !enabled && password == hash {
+		span.SetAttributes(
+			attribute.String("password.algorithm", "plaintext-disabled"),
+			attribute.Bool("password.match", true),
+			attribute.Bool("password.rehash_needed", false),
+			attribute.String("password.outcome", "plaintext-disabled_match"),
+		)
+		return true, false
 	}
 
 	var outcome string

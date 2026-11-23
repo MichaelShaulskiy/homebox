@@ -32,6 +32,8 @@ type UserQuery struct {
 	inters                  []Interceptor
 	predicates              []predicate.User
 	withGroups              *GroupQuery
+	withSubordinates        *UserQuery
+	withSupervisors         *UserQuery
 	withAuthTokens          *AuthTokensQuery
 	withPasswordResetTokens *PasswordResetTokensQuery
 	withAPIKeys             *APIKeyQuery
@@ -89,6 +91,50 @@ func (_q *UserQuery) QueryGroups() *GroupQuery {
 			sqlgraph.From(user.Table, user.FieldID, selector),
 			sqlgraph.To(group.Table, group.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, user.GroupsTable, user.GroupsPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QuerySubordinates chains the current query on the "subordinates" edge.
+func (_q *UserQuery) QuerySubordinates() *UserQuery {
+	query := (&UserClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, user.SubordinatesTable, user.SubordinatesPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QuerySupervisors chains the current query on the "supervisors" edge.
+func (_q *UserQuery) QuerySupervisors() *UserQuery {
+	query := (&UserClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, user.SupervisorsTable, user.SupervisorsPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -421,6 +467,8 @@ func (_q *UserQuery) Clone() *UserQuery {
 		inters:                  append([]Interceptor{}, _q.inters...),
 		predicates:              append([]predicate.User{}, _q.predicates...),
 		withGroups:              _q.withGroups.Clone(),
+		withSubordinates:        _q.withSubordinates.Clone(),
+		withSupervisors:         _q.withSupervisors.Clone(),
 		withAuthTokens:          _q.withAuthTokens.Clone(),
 		withPasswordResetTokens: _q.withPasswordResetTokens.Clone(),
 		withAPIKeys:             _q.withAPIKeys.Clone(),
@@ -441,6 +489,28 @@ func (_q *UserQuery) WithGroups(opts ...func(*GroupQuery)) *UserQuery {
 		opt(query)
 	}
 	_q.withGroups = query
+	return _q
+}
+
+// WithSubordinates tells the query-builder to eager-load the nodes that are connected to
+// the "subordinates" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *UserQuery) WithSubordinates(opts ...func(*UserQuery)) *UserQuery {
+	query := (&UserClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withSubordinates = query
+	return _q
+}
+
+// WithSupervisors tells the query-builder to eager-load the nodes that are connected to
+// the "supervisors" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *UserQuery) WithSupervisors(opts ...func(*UserQuery)) *UserQuery {
+	query := (&UserClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withSupervisors = query
 	return _q
 }
 
@@ -588,8 +658,10 @@ func (_q *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	var (
 		nodes       = []*User{}
 		_spec       = _q.querySpec()
-		loadedTypes = [7]bool{
+		loadedTypes = [9]bool{
 			_q.withGroups != nil,
+			_q.withSubordinates != nil,
+			_q.withSupervisors != nil,
 			_q.withAuthTokens != nil,
 			_q.withPasswordResetTokens != nil,
 			_q.withAPIKeys != nil,
@@ -620,6 +692,20 @@ func (_q *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 		if err := _q.loadGroups(ctx, query, nodes,
 			func(n *User) { n.Edges.Groups = []*Group{} },
 			func(n *User, e *Group) { n.Edges.Groups = append(n.Edges.Groups, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withSubordinates; query != nil {
+		if err := _q.loadSubordinates(ctx, query, nodes,
+			func(n *User) { n.Edges.Subordinates = []*User{} },
+			func(n *User, e *User) { n.Edges.Subordinates = append(n.Edges.Subordinates, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withSupervisors; query != nil {
+		if err := _q.loadSupervisors(ctx, query, nodes,
+			func(n *User) { n.Edges.Supervisors = []*User{} },
+			func(n *User, e *User) { n.Edges.Supervisors = append(n.Edges.Supervisors, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -724,6 +810,128 @@ func (_q *UserQuery) loadGroups(ctx context.Context, query *GroupQuery, nodes []
 		nodes, ok := nids[n.ID]
 		if !ok {
 			return fmt.Errorf(`unexpected "groups" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
+	}
+	return nil
+}
+func (_q *UserQuery) loadSubordinates(ctx context.Context, query *UserQuery, nodes []*User, init func(*User), assign func(*User, *User)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[uuid.UUID]*User)
+	nids := make(map[uuid.UUID]map[*User]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(user.SubordinatesTable)
+		s.Join(joinT).On(s.C(user.FieldID), joinT.C(user.SubordinatesPrimaryKey[0]))
+		s.Where(sql.InValues(joinT.C(user.SubordinatesPrimaryKey[1]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(user.SubordinatesPrimaryKey[1]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(uuid.UUID)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := *values[0].(*uuid.UUID)
+				inValue := *values[1].(*uuid.UUID)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*User]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*User](ctx, query, qr, query.inters)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "subordinates" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
+	}
+	return nil
+}
+func (_q *UserQuery) loadSupervisors(ctx context.Context, query *UserQuery, nodes []*User, init func(*User), assign func(*User, *User)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[uuid.UUID]*User)
+	nids := make(map[uuid.UUID]map[*User]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(user.SupervisorsTable)
+		s.Join(joinT).On(s.C(user.FieldID), joinT.C(user.SupervisorsPrimaryKey[1]))
+		s.Where(sql.InValues(joinT.C(user.SupervisorsPrimaryKey[0]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(user.SupervisorsPrimaryKey[0]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(uuid.UUID)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := *values[0].(*uuid.UUID)
+				inValue := *values[1].(*uuid.UUID)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*User]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*User](ctx, query, qr, query.inters)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "supervisors" node returned %v`, n.ID)
 		}
 		for kn := range nodes {
 			assign(kn, n)

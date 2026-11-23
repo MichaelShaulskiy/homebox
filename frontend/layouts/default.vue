@@ -31,7 +31,7 @@
 
           <CollectionSelector />
 
-          <DropdownMenu>
+          <DropdownMenu v-if="canManageAccounts">
             <DropdownMenuTrigger as-child>
               <SidebarMenuButton
                 class="flex justify-center bg-primary text-primary-foreground drop-shadow-md hover:bg-primary/90 active:bg-primary/90 active:text-primary-foreground group-data-[collapsible=icon]:justify-start"
@@ -594,6 +594,10 @@
 
   const authCtx = useAuthContext();
   const api = useUserApi();
+  const canManageAccounts = computed(
+    () =>
+      authCtx.user?.accountRole === "admin" || authCtx.user?.accountRole === "superadmin" || authCtx.user?.isSuperuser
+  );
 
   async function logout() {
     await authCtx.logout(api);

@@ -109,6 +109,20 @@ func (_c *UserCreate) SetNillableSuperuser(v *bool) *UserCreate {
 	return _c
 }
 
+// SetAccountRole sets the "account_role" field.
+func (_c *UserCreate) SetAccountRole(v user.AccountRole) *UserCreate {
+	_c.mutation.SetAccountRole(v)
+	return _c
+}
+
+// SetNillableAccountRole sets the "account_role" field if the given value is not nil.
+func (_c *UserCreate) SetNillableAccountRole(v *user.AccountRole) *UserCreate {
+	if v != nil {
+		_c.SetAccountRole(*v)
+	}
+	return _c
+}
+
 // SetActivatedOn sets the "activated_on" field.
 func (_c *UserCreate) SetActivatedOn(v time.Time) *UserCreate {
 	_c.mutation.SetActivatedOn(v)
@@ -198,6 +212,36 @@ func (_c *UserCreate) AddGroups(v ...*Group) *UserCreate {
 		ids[i] = v[i].ID
 	}
 	return _c.AddGroupIDs(ids...)
+}
+
+// AddSubordinateIDs adds the "subordinates" edge to the User entity by IDs.
+func (_c *UserCreate) AddSubordinateIDs(ids ...uuid.UUID) *UserCreate {
+	_c.mutation.AddSubordinateIDs(ids...)
+	return _c
+}
+
+// AddSubordinates adds the "subordinates" edges to the User entity.
+func (_c *UserCreate) AddSubordinates(v ...*User) *UserCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddSubordinateIDs(ids...)
+}
+
+// AddSupervisorIDs adds the "supervisors" edge to the User entity by IDs.
+func (_c *UserCreate) AddSupervisorIDs(ids ...uuid.UUID) *UserCreate {
+	_c.mutation.AddSupervisorIDs(ids...)
+	return _c
+}
+
+// AddSupervisors adds the "supervisors" edges to the User entity.
+func (_c *UserCreate) AddSupervisors(v ...*User) *UserCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddSupervisorIDs(ids...)
 }
 
 // AddAuthTokenIDs adds the "auth_tokens" edge to the AuthTokens entity by IDs.
@@ -326,6 +370,10 @@ func (_c *UserCreate) defaults() {
 		v := user.DefaultSuperuser
 		_c.mutation.SetSuperuser(v)
 	}
+	if _, ok := _c.mutation.AccountRole(); !ok {
+		v := user.DefaultAccountRole
+		_c.mutation.SetAccountRole(v)
+	}
 	if _, ok := _c.mutation.ID(); !ok {
 		v := user.DefaultID()
 		_c.mutation.SetID(v)
@@ -366,6 +414,14 @@ func (_c *UserCreate) check() error {
 	}
 	if _, ok := _c.mutation.Superuser(); !ok {
 		return &ValidationError{Name: "superuser", err: errors.New(`ent: missing required field "User.superuser"`)}
+	}
+	if _, ok := _c.mutation.AccountRole(); !ok {
+		return &ValidationError{Name: "account_role", err: errors.New(`ent: missing required field "User.account_role"`)}
+	}
+	if v, ok := _c.mutation.AccountRole(); ok {
+		if err := user.AccountRoleValidator(v); err != nil {
+			return &ValidationError{Name: "account_role", err: fmt.Errorf(`ent: validator failed for field "User.account_role": %w`, err)}
+		}
 	}
 	return nil
 }
@@ -430,6 +486,10 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		_spec.SetField(user.FieldSuperuser, field.TypeBool, value)
 		_node.Superuser = value
 	}
+	if value, ok := _c.mutation.AccountRole(); ok {
+		_spec.SetField(user.FieldAccountRole, field.TypeEnum, value)
+		_node.AccountRole = value
+	}
 	if value, ok := _c.mutation.ActivatedOn(); ok {
 		_spec.SetField(user.FieldActivatedOn, field.TypeTime, value)
 		_node.ActivatedOn = value
@@ -468,6 +528,38 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.SubordinatesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   user.SubordinatesTable,
+			Columns: user.SubordinatesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.SupervisorsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   user.SupervisorsTable,
+			Columns: user.SupervisorsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.AuthTokensIDs(); len(nodes) > 0 {

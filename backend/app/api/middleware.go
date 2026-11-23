@@ -16,6 +16,7 @@ import (
 	"github.com/sysadminsmedia/homebox/backend/internal/core/services"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/authroles"
+	userent "github.com/sysadminsmedia/homebox/backend/internal/data/ent/user"
 	"github.com/sysadminsmedia/homebox/backend/internal/sys/config"
 	"github.com/sysadminsmedia/homebox/backend/internal/sys/validate"
 	"github.com/sysadminsmedia/homebox/backend/pkgs/hasher"
@@ -97,7 +98,14 @@ func (a *app) mwRoles(rm RoleMode, required ...string) errchain.Middleware {
 			// here rather than querying the DB.
 			var roles *set.Set[string]
 			if services.IsAPIKeyAuth(spanCtx) {
-				s := set.New("user")
+				s := set.New(authroles.RoleUser.String())
+				account := services.UseUserCtx(spanCtx)
+				if account != nil &&
+					(account.AccountRole == userent.AccountRoleAdmin ||
+						account.AccountRole == userent.AccountRoleSuperadmin ||
+						account.IsSuperuser) {
+					s.Insert(authroles.RoleAdmin.String())
+				}
 				roles = &s
 				span.SetAttributes(attribute.Bool("roles.api_key", true))
 			} else {
@@ -372,6 +380,9 @@ func (a *app) mwTenant(next errchain.Handler) errchain.Handler {
 		}
 
 		hasAccess := false
+		if user.AccountRole == userent.AccountRoleSuperadmin || user.IsSuperuser {
+			hasAccess = true
+		}
 		for _, gid := range user.GroupIDs {
 			if gid == tenantID {
 				hasAccess = true
@@ -417,6 +428,11 @@ func (a *app) mwGroupOwner(next errchain.Handler) errchain.Handler {
 			recordMwSpanError(span, err)
 			span.SetAttributes(attribute.String("owner.outcome", "no_user_ctx"))
 			return validate.NewRequestError(err, http.StatusInternalServerError)
+		}
+
+		if auth.User.AccountRole == userent.AccountRoleSuperadmin || auth.User.IsSuperuser {
+			span.SetAttributes(attribute.String("owner.outcome", "superadmin_bypass"))
+			return next.ServeHTTP(w, r)
 		}
 
 		isOwner, err := a.repos.Groups.IsOwnerOf(spanCtx, auth.UID, auth.GID)

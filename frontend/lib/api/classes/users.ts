@@ -1,5 +1,15 @@
 import { BaseAPI, route } from "../base";
-import type { APIKeyCreate, APIKeyCreatedOut, APIKeyOut, ChangePassword, UserOut } from "../types/data-contracts";
+import type {
+  APIKeyCreate,
+  APIKeyCreatedOut,
+  APIKeyOut,
+  ChangePassword,
+  UserAccountCreate,
+  UserAccountRoleUpdate,
+  UserAccountSupervisorsUpdate,
+  UserOut,
+  UserSummary,
+} from "../types/data-contracts";
 import type { Result } from "../types/non-generated";
 
 export class UserApi extends BaseAPI {
@@ -57,5 +67,34 @@ export class UserApi extends BaseAPI {
 
   public deleteApiKey(id: string) {
     return this.http.delete<void>({ url: route(`/users/self/api-keys/${id}`) });
+  }
+
+  public getAccountMembers() {
+    return this.http.get<UserSummary[]>({ url: route("/account-members") });
+  }
+
+  public getAccountSupervisors() {
+    return this.http.get<UserSummary[]>({ url: route("/account-supervisors") });
+  }
+
+  public createAccount(body: UserAccountCreate) {
+    return this.http.post<UserAccountCreate, UserOut>({
+      url: route("/account-members"),
+      body,
+    });
+  }
+
+  public setAccountRole(id: string, body: UserAccountRoleUpdate) {
+    return this.http.put<UserAccountRoleUpdate, UserOut>({
+      url: route(`/account-members/${id}/role`),
+      body,
+    });
+  }
+
+  public setAccountSupervisors(id: string, body: UserAccountSupervisorsUpdate) {
+    return this.http.put<UserAccountSupervisorsUpdate, UserOut>({
+      url: route(`/account-members/${id}/supervisors`),
+      body,
+    });
   }
 }

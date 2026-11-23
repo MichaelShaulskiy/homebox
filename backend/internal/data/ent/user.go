@@ -33,6 +33,8 @@ type User struct {
 	IsSuperuser bool `json:"is_superuser,omitempty"`
 	// Superuser holds the value of the "superuser" field.
 	Superuser bool `json:"superuser,omitempty"`
+	// AccountRole holds the value of the "account_role" field.
+	AccountRole user.AccountRole `json:"account_role,omitempty"`
 	// ActivatedOn holds the value of the "activated_on" field.
 	ActivatedOn time.Time `json:"activated_on,omitempty"`
 	// OidcIssuer holds the value of the "oidc_issuer" field.
@@ -53,6 +55,10 @@ type User struct {
 type UserEdges struct {
 	// Groups holds the value of the groups edge.
 	Groups []*Group `json:"groups,omitempty"`
+	// Subordinates holds the value of the subordinates edge.
+	Subordinates []*User `json:"subordinates,omitempty"`
+	// Supervisors holds the value of the supervisors edge.
+	Supervisors []*User `json:"supervisors,omitempty"`
 	// AuthTokens holds the value of the auth_tokens edge.
 	AuthTokens []*AuthTokens `json:"auth_tokens,omitempty"`
 	// PasswordResetTokens holds the value of the password_reset_tokens edge.
@@ -67,7 +73,7 @@ type UserEdges struct {
 	UserGroups []*UserGroup `json:"user_groups,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [7]bool
+	loadedTypes [9]bool
 }
 
 // GroupsOrErr returns the Groups value or an error if the edge
@@ -79,10 +85,28 @@ func (e UserEdges) GroupsOrErr() ([]*Group, error) {
 	return nil, &NotLoadedError{edge: "groups"}
 }
 
+// SubordinatesOrErr returns the Subordinates value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) SubordinatesOrErr() ([]*User, error) {
+	if e.loadedTypes[1] {
+		return e.Subordinates, nil
+	}
+	return nil, &NotLoadedError{edge: "subordinates"}
+}
+
+// SupervisorsOrErr returns the Supervisors value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) SupervisorsOrErr() ([]*User, error) {
+	if e.loadedTypes[2] {
+		return e.Supervisors, nil
+	}
+	return nil, &NotLoadedError{edge: "supervisors"}
+}
+
 // AuthTokensOrErr returns the AuthTokens value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) AuthTokensOrErr() ([]*AuthTokens, error) {
-	if e.loadedTypes[1] {
+	if e.loadedTypes[3] {
 		return e.AuthTokens, nil
 	}
 	return nil, &NotLoadedError{edge: "auth_tokens"}
@@ -91,7 +115,7 @@ func (e UserEdges) AuthTokensOrErr() ([]*AuthTokens, error) {
 // PasswordResetTokensOrErr returns the PasswordResetTokens value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) PasswordResetTokensOrErr() ([]*PasswordResetTokens, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[4] {
 		return e.PasswordResetTokens, nil
 	}
 	return nil, &NotLoadedError{edge: "password_reset_tokens"}
@@ -100,7 +124,7 @@ func (e UserEdges) PasswordResetTokensOrErr() ([]*PasswordResetTokens, error) {
 // APIKeysOrErr returns the APIKeys value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) APIKeysOrErr() ([]*APIKey, error) {
-	if e.loadedTypes[3] {
+	if e.loadedTypes[5] {
 		return e.APIKeys, nil
 	}
 	return nil, &NotLoadedError{edge: "api_keys"}
@@ -109,7 +133,7 @@ func (e UserEdges) APIKeysOrErr() ([]*APIKey, error) {
 // NotifiersOrErr returns the Notifiers value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) NotifiersOrErr() ([]*Notifier, error) {
-	if e.loadedTypes[4] {
+	if e.loadedTypes[6] {
 		return e.Notifiers, nil
 	}
 	return nil, &NotLoadedError{edge: "notifiers"}
@@ -118,7 +142,7 @@ func (e UserEdges) NotifiersOrErr() ([]*Notifier, error) {
 // LabelTemplatesOrErr returns the LabelTemplates value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) LabelTemplatesOrErr() ([]*LabelTemplate, error) {
-	if e.loadedTypes[5] {
+	if e.loadedTypes[7] {
 		return e.LabelTemplates, nil
 	}
 	return nil, &NotLoadedError{edge: "label_templates"}
@@ -127,7 +151,7 @@ func (e UserEdges) LabelTemplatesOrErr() ([]*LabelTemplate, error) {
 // UserGroupsOrErr returns the UserGroups value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) UserGroupsOrErr() ([]*UserGroup, error) {
-	if e.loadedTypes[6] {
+	if e.loadedTypes[8] {
 		return e.UserGroups, nil
 	}
 	return nil, &NotLoadedError{edge: "user_groups"}
@@ -144,7 +168,7 @@ func (*User) scanValues(columns []string) ([]any, error) {
 			values[i] = new([]byte)
 		case user.FieldIsSuperuser, user.FieldSuperuser:
 			values[i] = new(sql.NullBool)
-		case user.FieldName, user.FieldEmail, user.FieldPassword, user.FieldOidcIssuer, user.FieldOidcSubject:
+		case user.FieldName, user.FieldEmail, user.FieldPassword, user.FieldAccountRole, user.FieldOidcIssuer, user.FieldOidcSubject:
 			values[i] = new(sql.NullString)
 		case user.FieldCreatedAt, user.FieldUpdatedAt, user.FieldActivatedOn:
 			values[i] = new(sql.NullTime)
@@ -214,6 +238,12 @@ func (_m *User) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.Superuser = value.Bool
 			}
+		case user.FieldAccountRole:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field account_role", values[i])
+			} else if value.Valid {
+				_m.AccountRole = user.AccountRole(value.String)
+			}
 		case user.FieldActivatedOn:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field activated_on", values[i])
@@ -265,6 +295,16 @@ func (_m *User) Value(name string) (ent.Value, error) {
 // QueryGroups queries the "groups" edge of the User entity.
 func (_m *User) QueryGroups() *GroupQuery {
 	return NewUserClient(_m.config).QueryGroups(_m)
+}
+
+// QuerySubordinates queries the "subordinates" edge of the User entity.
+func (_m *User) QuerySubordinates() *UserQuery {
+	return NewUserClient(_m.config).QuerySubordinates(_m)
+}
+
+// QuerySupervisors queries the "supervisors" edge of the User entity.
+func (_m *User) QuerySupervisors() *UserQuery {
+	return NewUserClient(_m.config).QuerySupervisors(_m)
 }
 
 // QueryAuthTokens queries the "auth_tokens" edge of the User entity.
@@ -339,6 +379,9 @@ func (_m *User) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("superuser=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Superuser))
+	builder.WriteString(", ")
+	builder.WriteString("account_role=")
+	builder.WriteString(fmt.Sprintf("%v", _m.AccountRole))
 	builder.WriteString(", ")
 	builder.WriteString("activated_on=")
 	builder.WriteString(_m.ActivatedOn.Format(time.ANSIC))

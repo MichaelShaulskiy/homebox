@@ -1181,6 +1181,10 @@ definitions:
     type: object
   ent.User:
     properties:
+      account_role:
+        allOf:
+        - $ref: '#/definitions/user.AccountRole'
+        description: AccountRole holds the value of the "account_role" field.
       activated_on:
         description: ActivatedOn holds the value of the "activated_on" field.
         type: string
@@ -1257,6 +1261,16 @@ definitions:
           edge.
         items:
           $ref: '#/definitions/ent.PasswordResetTokens'
+        type: array
+      subordinates:
+        description: Subordinates holds the value of the subordinates edge.
+        items:
+          $ref: '#/definitions/ent.User'
+        type: array
+      supervisors:
+        description: Supervisors holds the value of the supervisors edge.
+        items:
+          $ref: '#/definitions/ent.User'
         type: array
       user_groups:
         description: UserGroups holds the value of the user_groups edge.
@@ -2915,8 +2929,37 @@ definitions:
       type:
         type: string
     type: object
+  repo.UserAccountCreate:
+    properties:
+      accountRole:
+        $ref: '#/definitions/user.AccountRole'
+      email:
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+      supervisorIds:
+        items:
+          type: string
+        type: array
+    type: object
+  repo.UserAccountRoleUpdate:
+    properties:
+      accountRole:
+        $ref: '#/definitions/user.AccountRole'
+    type: object
+  repo.UserAccountSupervisorsUpdate:
+    properties:
+      supervisorIds:
+        items:
+          type: string
+        type: array
+    type: object
   repo.UserOut:
     properties:
+      accountRole:
+        $ref: '#/definitions/user.AccountRole'
       defaultGroupId:
         type: string
       email:
@@ -2935,15 +2978,25 @@ definitions:
         type: string
       oidcSubject:
         type: string
+      supervisorIds:
+        items:
+          type: string
+        type: array
     type: object
   repo.UserSummary:
     properties:
+      accountRole:
+        $ref: '#/definitions/user.AccountRole'
       email:
         type: string
       id:
         type: string
       name:
         type: string
+      supervisorIds:
+        items:
+          type: string
+        type: array
     type: object
   repo.UserUpdate:
     properties:
@@ -3006,6 +3059,18 @@ definitions:
     - TypeNumber
     - TypeBoolean
     - TypeTime
+  user.AccountRole:
+    enum:
+    - user
+    - superadmin
+    - admin
+    - user
+    type: string
+    x-enum-varnames:
+    - DefaultAccountRole
+    - AccountRoleSuperadmin
+    - AccountRoleAdmin
+    - AccountRoleUser
   usergroup.Role:
     enum:
     - user
@@ -3363,6 +3428,116 @@ info:
   title: Homebox API
   version: "1.0"
 paths:
+  /v1/account-members:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/repo.UserSummary'
+            type: array
+      security:
+      - Bearer: []
+      summary: Get account members
+      tags:
+      - Accounts
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: account
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/repo.UserAccountCreate'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/repo.UserOut'
+      security:
+      - Bearer: []
+      summary: Create an admin or read-only account
+      tags:
+      - Accounts
+  /v1/account-members/{id}/role:
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: account ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: role
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/repo.UserAccountRoleUpdate'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/repo.UserOut'
+      security:
+      - Bearer: []
+      summary: Change an account role
+      tags:
+      - Accounts
+  /v1/account-members/{id}/supervisors:
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: account ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: supervisors
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/repo.UserAccountSupervisorsUpdate'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/repo.UserOut'
+      security:
+      - Bearer: []
+      summary: Replace account supervisors
+      tags:
+      - Accounts
+  /v1/account-supervisors:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/repo.UserSummary'
+            type: array
+      security:
+      - Bearer: []
+      summary: Get admin and superadmin accounts available as supervisors
+      tags:
+      - Accounts
   /v1/actions/create-missing-thumbnails:
     post:
       description: Creates thumbnails for items that are missing them

@@ -100,6 +100,9 @@ func main() {
 	if handled, code := runResetPasswordCLI(os.Args); handled {
 		os.Exit(code)
 	}
+	if handled, code := runCreateSuperAdminCLI(os.Args); handled {
+		os.Exit(code)
+	}
 
 	cfg, err := config.New(build(), "Homebox inventory management system")
 	if err != nil {

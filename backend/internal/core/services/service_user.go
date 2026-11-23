@@ -11,6 +11,7 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/authroles"
+	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/user"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/repo"
 	"github.com/sysadminsmedia/homebox/backend/pkgs/hasher"
 	"github.com/sysadminsmedia/homebox/backend/pkgs/mailer"
@@ -310,6 +311,101 @@ func (svc *UserService) UpdateSelf(ctx context.Context, id uuid.UUID, data repo.
 	return out, err
 }
 
+func (svc *UserService) CreateAccount(ctx Context, data repo.UserAccountCreate) (repo.UserOut, error) {
+	if ctx.User == nil ||
+		(ctx.User.AccountRole != user.AccountRoleAdmin &&
+			ctx.User.AccountRole != user.AccountRoleSuperadmin &&
+			!ctx.User.IsSuperuser) {
+		return repo.UserOut{}, fmt.Errorf("only admins may create accounts")
+	}
+	if data.AccountRole != user.AccountRoleAdmin && data.AccountRole != user.AccountRoleUser {
+		return repo.UserOut{}, fmt.Errorf("SuperAdmin accounts may only be created outside the UI")
+	}
+	if err := validateSupervisors(ctx, svc.repos, data.SupervisorIDs); err != nil {
+		return repo.UserOut{}, err
+	}
+	passwordHash, err := hasher.HashPasswordCtx(ctx.Context, data.Password)
+	if err != nil {
+		return repo.UserOut{}, err
+	}
+	created, err := svc.repos.Users.Create(ctx, repo.UserCreate{
+		Name:           data.Name,
+		Email:          data.Email,
+		Password:       &passwordHash,
+		IsSuperuser:    false,
+		AccountRole:    data.AccountRole,
+		DefaultGroupID: ctx.GID,
+		IsOwner:        false,
+	})
+	if err != nil {
+		return repo.UserOut{}, err
+	}
+	if err := svc.repos.Users.SetSupervisors(ctx, created.ID, data.SupervisorIDs); err != nil {
+		return repo.UserOut{}, err
+	}
+	return svc.repos.Users.GetOneID(ctx, created.ID)
+}
+
+func validateSupervisors(ctx Context, repos *repo.AllRepos, supervisorIDs []uuid.UUID) error {
+	if len(supervisorIDs) == 0 {
+		return nil
+	}
+	supervisors, err := repos.Users.GetAccountSupervisors(ctx, ctx.GID)
+	if err != nil {
+		return err
+	}
+	allowed := make(map[uuid.UUID]struct{}, len(supervisors))
+	for _, supervisor := range supervisors {
+		allowed[supervisor.ID] = struct{}{}
+	}
+	for _, id := range supervisorIDs {
+		if _, ok := allowed[id]; !ok {
+			return fmt.Errorf("all supervisors must be admin or superadmin")
+		}
+	}
+	return nil
+}
+
+func (svc *UserService) SetAccountRole(ctx Context, id uuid.UUID, role user.AccountRole) (repo.UserOut, error) {
+	if ctx.User == nil ||
+		(ctx.User.AccountRole != user.AccountRoleAdmin &&
+			ctx.User.AccountRole != user.AccountRoleSuperadmin &&
+			!ctx.User.IsSuperuser) {
+		return repo.UserOut{}, fmt.Errorf("only admins may change account roles")
+	}
+	if role != user.AccountRoleAdmin && role != user.AccountRoleUser {
+		return repo.UserOut{}, fmt.Errorf("SuperAdmin accounts may only be changed outside the UI")
+	}
+	if err := svc.repos.Users.SetAccountRole(ctx, id, role); err != nil {
+		return repo.UserOut{}, err
+	}
+	return svc.repos.Users.GetOneID(ctx, id)
+}
+
+func (svc *UserService) SetAccountSupervisors(ctx Context, id uuid.UUID, supervisorIDs []uuid.UUID) (repo.UserOut, error) {
+	if ctx.User == nil ||
+		(ctx.User.AccountRole != user.AccountRoleAdmin &&
+			ctx.User.AccountRole != user.AccountRoleSuperadmin &&
+			!ctx.User.IsSuperuser) {
+		return repo.UserOut{}, fmt.Errorf("only admins may change supervisors")
+	}
+	if err := validateSupervisors(ctx, svc.repos, supervisorIDs); err != nil {
+		return repo.UserOut{}, err
+	}
+	if err := svc.repos.Users.SetSupervisors(ctx, id, supervisorIDs); err != nil {
+		return repo.UserOut{}, err
+	}
+	return svc.repos.Users.GetOneID(ctx, id)
+}
+
+func (svc *UserService) GetAccountMembers(ctx Context) ([]repo.UserSummary, error) {
+	return svc.repos.Users.GetUsersByGroupID(ctx, ctx.GID)
+}
+
+func (svc *UserService) GetAccountSupervisors(ctx Context) ([]repo.UserSummary, error) {
+	return svc.repos.Users.GetAccountSupervisors(ctx, ctx.GID)
+}
+
 // ============================================================================
 // User Authentication
 
@@ -353,7 +449,18 @@ func (svc *UserService) createSessionToken(ctx context.Context, userID uuid.UUID
 	}
 
 	userCtx, userSpan := entityServiceTracer().Start(ctx, "service.UserService.createSessionToken.userToken")
-	created, err := svc.repos.AuthTokens.CreateToken(userCtx, data, authroles.RoleUser)
+	account, err := svc.repos.Users.GetOneID(userCtx, userID)
+	if err != nil {
+		recordServiceSpanError(userSpan, err)
+		userSpan.End()
+		recordServiceSpanError(span, err)
+		return UserAuthTokenDetail{}, err
+	}
+	sessionRole := authroles.RoleUser
+	if account.AccountRole == user.AccountRoleAdmin || account.AccountRole == user.AccountRoleSuperadmin || account.IsSuperuser {
+		sessionRole = authroles.RoleAdmin
+	}
+	created, err := svc.repos.AuthTokens.CreateToken(userCtx, data, sessionRole)
 	if err != nil {
 		recordServiceSpanError(userSpan, err)
 		userSpan.End()

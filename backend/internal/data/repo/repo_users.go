@@ -2,6 +2,7 @@ package repo
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"github.com/google/uuid"
@@ -34,11 +35,12 @@ type (
 	// in the database. It should to create users from an API unless the user has
 	// rights to create SuperUsers. For regular user in data use the UserIn struct.
 	UserCreate struct {
-		Name           string    `json:"name"`
-		Email          string    `json:"email"`
-		Password       *string   `json:"password"`
-		IsSuperuser    bool      `json:"isSuperUser"`
-		DefaultGroupID uuid.UUID `json:"defaultGroupID"`
+		Name           string           `json:"name"`
+		Email          string           `json:"email"`
+		Password       *string          `json:"password"`
+		IsSuperuser    bool             `json:"isSuperUser"`
+		AccountRole    user.AccountRole `json:"accountRole"`
+		DefaultGroupID uuid.UUID        `json:"defaultGroupID"`
 		// IsOwner controls the role on the membership row created for
 		// (user, DefaultGroupID). It does not grant any cross-group privilege.
 		IsOwner bool `json:"isOwner"`
@@ -49,22 +51,42 @@ type (
 		Email string `json:"email"`
 	}
 
+	UserAccountCreate struct {
+		Name          string           `json:"name"`
+		Email         string           `json:"email"`
+		Password      string           `json:"password"`
+		AccountRole   user.AccountRole `json:"accountRole"`
+		SupervisorIDs []uuid.UUID      `json:"supervisorIds"`
+	}
+
+	UserAccountRoleUpdate struct {
+		AccountRole user.AccountRole `json:"accountRole"`
+	}
+
+	UserAccountSupervisorsUpdate struct {
+		SupervisorIDs []uuid.UUID `json:"supervisorIds"`
+	}
+
 	UserOut struct {
-		ID             uuid.UUID   `json:"id"`
-		Name           string      `json:"name"`
-		Email          string      `json:"email"`
-		IsSuperuser    bool        `json:"isSuperuser"`
-		DefaultGroupID uuid.UUID   `json:"defaultGroupId"`
-		GroupIDs       []uuid.UUID `json:"groupIds"`
-		PasswordHash   string      `json:"-"`
-		OidcIssuer     *string     `json:"oidcIssuer"`
-		OidcSubject    *string     `json:"oidcSubject"`
+		ID             uuid.UUID        `json:"id"`
+		Name           string           `json:"name"`
+		Email          string           `json:"email"`
+		IsSuperuser    bool             `json:"isSuperuser"`
+		AccountRole    user.AccountRole `json:"accountRole"`
+		SupervisorIDs  []uuid.UUID      `json:"supervisorIds"`
+		DefaultGroupID uuid.UUID        `json:"defaultGroupId"`
+		GroupIDs       []uuid.UUID      `json:"groupIds"`
+		PasswordHash   string           `json:"-"`
+		OidcIssuer     *string          `json:"oidcIssuer"`
+		OidcSubject    *string          `json:"oidcSubject"`
 	}
 
 	UserSummary struct {
-		Name  string    `json:"name"`
-		Email string    `json:"email"`
-		ID    uuid.UUID `json:"id"`
+		Name          string           `json:"name"`
+		Email         string           `json:"email"`
+		ID            uuid.UUID        `json:"id"`
+		AccountRole   user.AccountRole `json:"accountRole"`
+		SupervisorIDs []uuid.UUID      `json:"supervisorIds"`
 	}
 )
 
@@ -76,10 +98,14 @@ var (
 
 func mapUserOut(user *ent.User) UserOut {
 	return UserOut{
-		ID:             user.ID,
-		Name:           user.Name,
-		Email:          user.Email,
-		IsSuperuser:    user.IsSuperuser,
+		ID:          user.ID,
+		Name:        user.Name,
+		Email:       user.Email,
+		IsSuperuser: user.IsSuperuser,
+		AccountRole: user.AccountRole,
+		SupervisorIDs: lo.Map(user.Edges.Supervisors, func(supervisor *ent.User, _ int) uuid.UUID {
+			return supervisor.ID
+		}),
 		DefaultGroupID: lo.FromPtrOr(user.DefaultGroupID, uuid.Nil),
 		GroupIDs: lo.Map(user.Edges.Groups, func(g *ent.Group, _ int) uuid.UUID {
 			return g.ID
@@ -92,9 +118,13 @@ func mapUserOut(user *ent.User) UserOut {
 
 func mapUserSummary(user *ent.User) UserSummary {
 	return UserSummary{
-		Name:  user.Name,
-		Email: user.Email,
-		ID:    user.ID,
+		Name:        user.Name,
+		Email:       user.Email,
+		ID:          user.ID,
+		AccountRole: user.AccountRole,
+		SupervisorIDs: lo.Map(user.Edges.Supervisors, func(supervisor *ent.User, _ int) uuid.UUID {
+			return supervisor.ID
+		}),
 	}
 }
 
@@ -117,6 +147,7 @@ func (r *UserRepository) GetOneID(ctx context.Context, id uuid.UUID) (UserOut, e
 	out, err := mapUserOutErr(r.db.User.Query().
 		Where(user.ID(id)).
 		WithGroups().
+		WithSupervisors().
 		Only(ctx))
 	if err != nil {
 		recordSpanError(span, err)
@@ -134,6 +165,7 @@ func (r *UserRepository) GetOneEmail(ctx context.Context, email string) (UserOut
 	out, err := mapUserOutErr(r.db.User.Query().
 		Where(user.EmailEqualFold(normalizeEmail(email))).
 		WithGroups().
+		WithSupervisors().
 		Only(ctx),
 	)
 	if err != nil {
@@ -182,7 +214,7 @@ func (r *UserRepository) GetAll(ctx context.Context) ([]UserOut, error) {
 	ctx, span := entityTracer().Start(ctx, "repo.UserRepository.GetAll")
 	defer span.End()
 
-	out, err := mapUsersOutErr(r.db.User.Query().WithGroups().All(ctx))
+	out, err := mapUsersOutErr(r.db.User.Query().WithGroups().WithSupervisors().All(ctx))
 	if err != nil {
 		recordSpanError(span, err)
 		return out, err
@@ -207,6 +239,9 @@ func (r *UserRepository) createUserWithMembership(
 	usr UserCreate,
 	configure func(*ent.UserCreate) *ent.UserCreate,
 ) (uuid.UUID, error) {
+	if usr.AccountRole == "" {
+		usr.AccountRole = user.AccountRoleUser
+	}
 	tx, err := r.db.Tx(ctx)
 	if err != nil {
 		return uuid.Nil, err
@@ -217,6 +252,7 @@ func (r *UserRepository) createUserWithMembership(
 		SetName(usr.Name).
 		SetEmail(normalizeEmail(usr.Email)).
 		SetIsSuperuser(usr.IsSuperuser).
+		SetAccountRole(usr.AccountRole).
 		SetDefaultGroupID(usr.DefaultGroupID)
 
 	if usr.Password != nil {
@@ -312,6 +348,75 @@ func (r *UserRepository) Update(ctx context.Context, id uuid.UUID, data UserUpda
 	_, err := q.Save(ctx)
 	recordSpanError(span, err)
 	return err
+}
+
+func (r *UserRepository) SetAccountRole(ctx context.Context, id uuid.UUID, role user.AccountRole) error {
+	if role != user.AccountRoleAdmin && role != user.AccountRoleUser {
+		return fmt.Errorf("only admin and user roles may be assigned through the UI")
+	}
+	target, err := r.db.User.Get(ctx, id)
+	if err != nil {
+		return err
+	}
+	if target.AccountRole == user.AccountRoleSuperadmin || target.IsSuperuser || target.Superuser {
+		return fmt.Errorf("SuperAdmin accounts may only be managed outside the UI")
+	}
+	_, err = r.db.User.UpdateOneID(id).
+		SetAccountRole(role).
+		SetIsSuperuser(false).
+		SetSuperuser(false).
+		Save(ctx)
+	return err
+}
+
+func (r *UserRepository) SetSupervisors(ctx context.Context, id uuid.UUID, supervisorIDs []uuid.UUID) error {
+	if len(supervisorIDs) > 0 {
+		supervisors, err := r.db.User.Query().
+			Where(user.IDIn(supervisorIDs...)).
+			All(ctx)
+		if err != nil {
+			return err
+		}
+		if len(supervisors) != len(supervisorIDs) {
+			return fmt.Errorf("one or more supervisors do not exist")
+		}
+		for _, supervisor := range supervisors {
+			if supervisor.AccountRole != user.AccountRoleAdmin &&
+				supervisor.AccountRole != user.AccountRoleSuperadmin &&
+				!supervisor.IsSuperuser {
+				return fmt.Errorf("all supervisors must be admin or superadmin")
+			}
+		}
+	}
+	builder := r.db.User.UpdateOneID(id).ClearSupervisors()
+	if len(supervisorIDs) > 0 {
+		builder.AddSupervisorIDs(supervisorIDs...)
+	}
+	_, err := builder.Save(ctx)
+	return err
+}
+
+func (r *UserRepository) GetAccountSupervisors(ctx context.Context, gid uuid.UUID) ([]UserSummary, error) {
+	rows, err := r.db.User.Query().
+		Where(
+			user.HasGroupsWith(group.ID(gid)),
+			user.Or(
+				user.AccountRoleEQ(user.AccountRoleAdmin),
+				user.AccountRoleEQ(user.AccountRoleSuperadmin),
+				user.IsSuperuser(true),
+			),
+		).
+		WithSupervisors().
+		Order(user.ByName()).
+		All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	out := make([]UserSummary, len(rows))
+	for i, row := range rows {
+		out[i] = mapUserSummary(row)
+	}
+	return out, nil
 }
 
 func (r *UserRepository) UpdateDefaultGroup(ctx context.Context, id uuid.UUID, groupID uuid.UUID) error {
@@ -447,6 +552,7 @@ func (r *UserRepository) GetUsersByGroupID(ctx context.Context, gid uuid.UUID) (
 
 	out, err := mapUsersSummaryErr(r.db.User.Query().
 		Where(user.HasGroupsWith(group.ID(gid))).
+		WithSupervisors().
 		All(ctx))
 	if err != nil {
 		recordSpanError(span, err)

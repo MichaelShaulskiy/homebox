@@ -17,6 +17,13 @@ export enum UsergroupRole {
   RoleOwner = "owner",
 }
 
+export enum UserAccountRole {
+  DefaultAccountRole = "user",
+  AccountRoleSuperadmin = "superadmin",
+  AccountRoleAdmin = "admin",
+  AccountRoleUser = "user",
+}
+
 export enum TemplatefieldType {
   TypeText = "text",
   TypeNumber = "number",
@@ -845,6 +852,8 @@ export interface EntTemplateFieldEdges {
 }
 
 export interface EntUser {
+  /** AccountRole holds the value of the "account_role" field. */
+  account_role: UserAccountRole;
   /** ActivatedOn holds the value of the "activated_on" field. */
   activated_on: string;
   /** CreatedAt holds the value of the "created_at" field. */
@@ -889,6 +898,10 @@ export interface EntUserEdges {
   notifiers: EntNotifier[];
   /** PasswordResetTokens holds the value of the password_reset_tokens edge. */
   password_reset_tokens: EntPasswordResetTokens[];
+  /** Subordinates holds the value of the subordinates edge. */
+  subordinates: EntUser[];
+  /** Supervisors holds the value of the supervisors edge. */
+  supervisors: EntUser[];
   /** UserGroups holds the value of the user_groups edge. */
   user_groups: EntUserGroup[];
 }
@@ -1809,7 +1822,24 @@ export interface TreeItem {
   type: string;
 }
 
+export interface UserAccountCreate {
+  accountRole: UserAccountRole;
+  email: string;
+  name: string;
+  password: string;
+  supervisorIds: string[];
+}
+
+export interface UserAccountRoleUpdate {
+  accountRole: UserAccountRole;
+}
+
+export interface UserAccountSupervisorsUpdate {
+  supervisorIds: string[];
+}
+
 export interface UserOut {
+  accountRole: UserAccountRole;
   defaultGroupId: string;
   email: string;
   groupIds: string[];
@@ -1818,12 +1848,15 @@ export interface UserOut {
   name: string;
   oidcIssuer: string;
   oidcSubject: string;
+  supervisorIds: string[];
 }
 
 export interface UserSummary {
+  accountRole: UserAccountRole;
   email: string;
   id: string;
   name: string;
+  supervisorIds: string[];
 }
 
 export interface UserUpdate {

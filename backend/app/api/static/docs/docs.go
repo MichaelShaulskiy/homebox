@@ -18,6 +18,186 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/v1/account-members": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Accounts"
+                ],
+                "summary": "Get account members",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/repo.UserSummary"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Accounts"
+                ],
+                "summary": "Create an admin or read-only account",
+                "parameters": [
+                    {
+                        "description": "account",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/repo.UserAccountCreate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/repo.UserOut"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/account-members/{id}/role": {
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Accounts"
+                ],
+                "summary": "Change an account role",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "account ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "role",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/repo.UserAccountRoleUpdate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/repo.UserOut"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/account-members/{id}/supervisors": {
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Accounts"
+                ],
+                "summary": "Replace account supervisors",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "account ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "supervisors",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/repo.UserAccountSupervisorsUpdate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/repo.UserOut"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/account-supervisors": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Accounts"
+                ],
+                "summary": "Get admin and superadmin accounts available as supervisors",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/repo.UserSummary"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/v1/actions/create-missing-thumbnails": {
             "post": {
                 "security": [
@@ -6007,6 +6187,14 @@ const docTemplate = `{
         "ent.User": {
             "type": "object",
             "properties": {
+                "account_role": {
+                    "description": "AccountRole holds the value of the \"account_role\" field.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/user.AccountRole"
+                        }
+                    ]
+                },
                 "activated_on": {
                     "description": "ActivatedOn holds the value of the \"activated_on\" field.",
                     "type": "string"
@@ -6109,6 +6297,20 @@ const docTemplate = `{
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/ent.PasswordResetTokens"
+                    }
+                },
+                "subordinates": {
+                    "description": "Subordinates holds the value of the subordinates edge.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ent.User"
+                    }
+                },
+                "supervisors": {
+                    "description": "Supervisors holds the value of the supervisors edge.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ent.User"
                     }
                 },
                 "user_groups": {
@@ -8477,9 +8679,54 @@ const docTemplate = `{
                 }
             }
         },
+        "repo.UserAccountCreate": {
+            "type": "object",
+            "properties": {
+                "accountRole": {
+                    "$ref": "#/definitions/user.AccountRole"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "supervisorIds": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "repo.UserAccountRoleUpdate": {
+            "type": "object",
+            "properties": {
+                "accountRole": {
+                    "$ref": "#/definitions/user.AccountRole"
+                }
+            }
+        },
+        "repo.UserAccountSupervisorsUpdate": {
+            "type": "object",
+            "properties": {
+                "supervisorIds": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
         "repo.UserOut": {
             "type": "object",
             "properties": {
+                "accountRole": {
+                    "$ref": "#/definitions/user.AccountRole"
+                },
                 "defaultGroupId": {
                     "type": "string"
                 },
@@ -8506,12 +8753,21 @@ const docTemplate = `{
                 },
                 "oidcSubject": {
                     "type": "string"
+                },
+                "supervisorIds": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 }
             }
         },
         "repo.UserSummary": {
             "type": "object",
             "properties": {
+                "accountRole": {
+                    "$ref": "#/definitions/user.AccountRole"
+                },
                 "email": {
                     "type": "string"
                 },
@@ -8520,6 +8776,12 @@ const docTemplate = `{
                 },
                 "name": {
                     "type": "string"
+                },
+                "supervisorIds": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 }
             }
         },
@@ -8612,6 +8874,21 @@ const docTemplate = `{
                 "TypeNumber",
                 "TypeBoolean",
                 "TypeTime"
+            ]
+        },
+        "user.AccountRole": {
+            "type": "string",
+            "enum": [
+                "user",
+                "superadmin",
+                "admin",
+                "user"
+            ],
+            "x-enum-varnames": [
+                "DefaultAccountRole",
+                "AccountRoleSuperadmin",
+                "AccountRoleAdmin",
+                "AccountRoleUser"
             ]
         },
         "usergroup.Role": {
