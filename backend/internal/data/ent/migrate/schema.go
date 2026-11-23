@@ -139,6 +139,8 @@ var (
 		{Name: "import_ref", Type: field.TypeString, Nullable: true, Size: 100},
 		{Name: "notes", Type: field.TypeString, Nullable: true, Size: 1000},
 		{Name: "quantity", Type: field.TypeFloat64, Default: 1},
+		{Name: "available_quantity", Type: field.TypeFloat64, Default: 1},
+		{Name: "defective_quantity", Type: field.TypeFloat64, Default: 0},
 		{Name: "insured", Type: field.TypeBool, Default: false},
 		{Name: "archived", Type: field.TypeBool, Default: false},
 		{Name: "asset_id", Type: field.TypeInt64, Default: 0},
@@ -169,25 +171,25 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "entities_entities_children",
-				Columns:    []*schema.Column{EntitiesColumns[25]},
+				Columns:    []*schema.Column{EntitiesColumns[27]},
 				RefColumns: []*schema.Column{EntitiesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "entities_entities_location_entities",
-				Columns:    []*schema.Column{EntitiesColumns[26]},
+				Columns:    []*schema.Column{EntitiesColumns[28]},
 				RefColumns: []*schema.Column{EntitiesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "entities_entity_types_entities",
-				Columns:    []*schema.Column{EntitiesColumns[27]},
+				Columns:    []*schema.Column{EntitiesColumns[29]},
 				RefColumns: []*schema.Column{EntityTypesColumns[0]},
 				OnDelete:   schema.Restrict,
 			},
 			{
 				Symbol:     "entities_groups_entities",
-				Columns:    []*schema.Column{EntitiesColumns[28]},
+				Columns:    []*schema.Column{EntitiesColumns[30]},
 				RefColumns: []*schema.Column{GroupsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
@@ -201,27 +203,27 @@ var (
 			{
 				Name:    "entity_manufacturer",
 				Unique:  false,
-				Columns: []*schema.Column{EntitiesColumns[14]},
+				Columns: []*schema.Column{EntitiesColumns[16]},
 			},
 			{
 				Name:    "entity_model_number",
 				Unique:  false,
-				Columns: []*schema.Column{EntitiesColumns[13]},
+				Columns: []*schema.Column{EntitiesColumns[15]},
 			},
 			{
 				Name:    "entity_serial_number",
 				Unique:  false,
-				Columns: []*schema.Column{EntitiesColumns[12]},
+				Columns: []*schema.Column{EntitiesColumns[14]},
 			},
 			{
 				Name:    "entity_archived",
 				Unique:  false,
-				Columns: []*schema.Column{EntitiesColumns[9]},
+				Columns: []*schema.Column{EntitiesColumns[11]},
 			},
 			{
 				Name:    "entity_asset_id",
 				Unique:  false,
-				Columns: []*schema.Column{EntitiesColumns[10]},
+				Columns: []*schema.Column{EntitiesColumns[12]},
 			},
 		},
 	}
@@ -409,6 +411,184 @@ var (
 				Columns:    []*schema.Column{GroupInvitationTokensColumns[6]},
 				RefColumns: []*schema.Column{GroupsColumns[0]},
 				OnDelete:   schema.Cascade,
+			},
+		},
+	}
+	// InventoryAssignmentsColumns holds the columns for the "inventory_assignments" table.
+	InventoryAssignmentsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "quantity", Type: field.TypeFloat64, Default: 0},
+		{Name: "serial_number", Type: field.TypeString, Nullable: true, Size: 255},
+		{Name: "asset_tag", Type: field.TypeString, Nullable: true, Size: 255},
+		{Name: "note", Type: field.TypeString, Nullable: true, Size: 1000},
+		{Name: "issued_at", Type: field.TypeTime},
+		{Name: "returned_at", Type: field.TypeTime, Nullable: true},
+		{Name: "entity_id", Type: field.TypeUUID},
+		{Name: "group_id", Type: field.TypeUUID},
+		{Name: "recipient_id", Type: field.TypeUUID},
+	}
+	// InventoryAssignmentsTable holds the schema information for the "inventory_assignments" table.
+	InventoryAssignmentsTable = &schema.Table{
+		Name:       "inventory_assignments",
+		Columns:    InventoryAssignmentsColumns,
+		PrimaryKey: []*schema.Column{InventoryAssignmentsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "inventory_assignments_entities_inventory_assignments",
+				Columns:    []*schema.Column{InventoryAssignmentsColumns[9]},
+				RefColumns: []*schema.Column{EntitiesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "inventory_assignments_groups_inventory_assignments",
+				Columns:    []*schema.Column{InventoryAssignmentsColumns[10]},
+				RefColumns: []*schema.Column{GroupsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "inventory_assignments_inventory_recipients_assignments",
+				Columns:    []*schema.Column{InventoryAssignmentsColumns[11]},
+				RefColumns: []*schema.Column{InventoryRecipientsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "inventoryassignment_group_id",
+				Unique:  false,
+				Columns: []*schema.Column{InventoryAssignmentsColumns[10]},
+			},
+			{
+				Name:    "inventoryassignment_group_id_returned_at",
+				Unique:  false,
+				Columns: []*schema.Column{InventoryAssignmentsColumns[10], InventoryAssignmentsColumns[8]},
+			},
+		},
+	}
+	// InventoryRecipientsColumns holds the columns for the "inventory_recipients" table.
+	InventoryRecipientsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "first_name", Type: field.TypeString, Size: 255},
+		{Name: "last_name", Type: field.TypeString, Size: 255},
+		{Name: "email", Type: field.TypeString, Nullable: true, Size: 255},
+		{Name: "department", Type: field.TypeString, Nullable: true, Size: 255},
+		{Name: "is_active", Type: field.TypeBool, Default: true},
+		{Name: "group_id", Type: field.TypeUUID},
+	}
+	// InventoryRecipientsTable holds the schema information for the "inventory_recipients" table.
+	InventoryRecipientsTable = &schema.Table{
+		Name:       "inventory_recipients",
+		Columns:    InventoryRecipientsColumns,
+		PrimaryKey: []*schema.Column{InventoryRecipientsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "inventory_recipients_groups_inventory_recipients",
+				Columns:    []*schema.Column{InventoryRecipientsColumns[8]},
+				RefColumns: []*schema.Column{GroupsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "inventoryrecipient_group_id",
+				Unique:  false,
+				Columns: []*schema.Column{InventoryRecipientsColumns[8]},
+			},
+			{
+				Name:    "inventoryrecipient_group_id_is_active",
+				Unique:  false,
+				Columns: []*schema.Column{InventoryRecipientsColumns[8], InventoryRecipientsColumns[7]},
+			},
+			{
+				Name:    "inventoryrecipient_group_id_email",
+				Unique:  true,
+				Columns: []*schema.Column{InventoryRecipientsColumns[8], InventoryRecipientsColumns[5]},
+			},
+			{
+				Name:    "inventoryrecipient_last_name",
+				Unique:  false,
+				Columns: []*schema.Column{InventoryRecipientsColumns[4]},
+			},
+		},
+	}
+	// InventoryTransactionsColumns holds the columns for the "inventory_transactions" table.
+	InventoryTransactionsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "timestamp", Type: field.TypeTime},
+		{Name: "action_type", Type: field.TypeEnum, Enums: []string{"ISSUED", "RETURNED_OK", "RETURNED_DEFECTIVE", "WRITTEN_OFF", "STOCK_ADDED"}},
+		{Name: "item_name", Type: field.TypeString, Size: 255},
+		{Name: "quantity", Type: field.TypeFloat64},
+		{Name: "performed_by_admin_id", Type: field.TypeUUID},
+		{Name: "performed_by_admin_name", Type: field.TypeString, Size: 255},
+		{Name: "target_user_name", Type: field.TypeString, Nullable: true, Size: 255},
+		{Name: "reason_or_note", Type: field.TypeString, Nullable: true, Size: 2000},
+		{Name: "serial_number", Type: field.TypeString, Nullable: true, Size: 255},
+		{Name: "asset_tag", Type: field.TypeString, Nullable: true, Size: 255},
+		{Name: "item_id", Type: field.TypeUUID},
+		{Name: "group_id", Type: field.TypeUUID},
+		{Name: "target_user_id", Type: field.TypeUUID, Nullable: true},
+	}
+	// InventoryTransactionsTable holds the schema information for the "inventory_transactions" table.
+	InventoryTransactionsTable = &schema.Table{
+		Name:       "inventory_transactions",
+		Columns:    InventoryTransactionsColumns,
+		PrimaryKey: []*schema.Column{InventoryTransactionsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "inventory_transactions_entities_inventory_transactions",
+				Columns:    []*schema.Column{InventoryTransactionsColumns[13]},
+				RefColumns: []*schema.Column{EntitiesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "inventory_transactions_groups_inventory_transactions",
+				Columns:    []*schema.Column{InventoryTransactionsColumns[14]},
+				RefColumns: []*schema.Column{GroupsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "inventory_transactions_inventory_recipients_inventory_transactions",
+				Columns:    []*schema.Column{InventoryTransactionsColumns[15]},
+				RefColumns: []*schema.Column{InventoryRecipientsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "inventorytransaction_group_id",
+				Unique:  false,
+				Columns: []*schema.Column{InventoryTransactionsColumns[14]},
+			},
+			{
+				Name:    "inventorytransaction_timestamp",
+				Unique:  false,
+				Columns: []*schema.Column{InventoryTransactionsColumns[3]},
+			},
+			{
+				Name:    "inventorytransaction_group_id_action_type",
+				Unique:  false,
+				Columns: []*schema.Column{InventoryTransactionsColumns[14], InventoryTransactionsColumns[4]},
+			},
+			{
+				Name:    "inventorytransaction_item_id",
+				Unique:  false,
+				Columns: []*schema.Column{InventoryTransactionsColumns[13]},
+			},
+			{
+				Name:    "inventorytransaction_target_user_id",
+				Unique:  false,
+				Columns: []*schema.Column{InventoryTransactionsColumns[15]},
+			},
+			{
+				Name:    "inventorytransaction_performed_by_admin_id",
+				Unique:  false,
+				Columns: []*schema.Column{InventoryTransactionsColumns[7]},
 			},
 		},
 	}
@@ -732,6 +912,9 @@ var (
 		ExportsTable,
 		GroupsTable,
 		GroupInvitationTokensTable,
+		InventoryAssignmentsTable,
+		InventoryRecipientsTable,
+		InventoryTransactionsTable,
 		LabelTemplatesTable,
 		MaintenanceEntriesTable,
 		NotifiersTable,
@@ -761,6 +944,13 @@ func init() {
 	EntityTypesTable.ForeignKeys[1].RefTable = GroupsTable
 	ExportsTable.ForeignKeys[0].RefTable = GroupsTable
 	GroupInvitationTokensTable.ForeignKeys[0].RefTable = GroupsTable
+	InventoryAssignmentsTable.ForeignKeys[0].RefTable = EntitiesTable
+	InventoryAssignmentsTable.ForeignKeys[1].RefTable = GroupsTable
+	InventoryAssignmentsTable.ForeignKeys[2].RefTable = InventoryRecipientsTable
+	InventoryRecipientsTable.ForeignKeys[0].RefTable = GroupsTable
+	InventoryTransactionsTable.ForeignKeys[0].RefTable = EntitiesTable
+	InventoryTransactionsTable.ForeignKeys[1].RefTable = GroupsTable
+	InventoryTransactionsTable.ForeignKeys[2].RefTable = InventoryRecipientsTable
 	LabelTemplatesTable.ForeignKeys[0].RefTable = GroupsTable
 	LabelTemplatesTable.ForeignKeys[1].RefTable = UsersTable
 	MaintenanceEntriesTable.ForeignKeys[0].RefTable = EntitiesTable

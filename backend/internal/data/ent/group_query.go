@@ -19,6 +19,9 @@ import (
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/export"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/group"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/groupinvitationtoken"
+	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/inventoryassignment"
+	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/inventoryrecipient"
+	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/inventorytransaction"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/labeltemplate"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/notifier"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/predicate"
@@ -30,20 +33,23 @@ import (
 // GroupQuery is the builder for querying Group entities.
 type GroupQuery struct {
 	config
-	ctx                  *QueryContext
-	order                []group.OrderOption
-	inters               []Interceptor
-	predicates           []predicate.Group
-	withUsers            *UserQuery
-	withEntityTypes      *EntityTypeQuery
-	withEntities         *EntityQuery
-	withTags             *TagQuery
-	withInvitationTokens *GroupInvitationTokenQuery
-	withNotifiers        *NotifierQuery
-	withEntityTemplates  *EntityTemplateQuery
-	withExports          *ExportQuery
-	withLabelTemplates   *LabelTemplateQuery
-	withUserGroups       *UserGroupQuery
+	ctx                       *QueryContext
+	order                     []group.OrderOption
+	inters                    []Interceptor
+	predicates                []predicate.Group
+	withUsers                 *UserQuery
+	withEntityTypes           *EntityTypeQuery
+	withEntities              *EntityQuery
+	withTags                  *TagQuery
+	withInvitationTokens      *GroupInvitationTokenQuery
+	withNotifiers             *NotifierQuery
+	withEntityTemplates       *EntityTemplateQuery
+	withExports               *ExportQuery
+	withLabelTemplates        *LabelTemplateQuery
+	withInventoryRecipients   *InventoryRecipientQuery
+	withInventoryAssignments  *InventoryAssignmentQuery
+	withInventoryTransactions *InventoryTransactionQuery
+	withUserGroups            *UserGroupQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -278,6 +284,72 @@ func (_q *GroupQuery) QueryLabelTemplates() *LabelTemplateQuery {
 	return query
 }
 
+// QueryInventoryRecipients chains the current query on the "inventory_recipients" edge.
+func (_q *GroupQuery) QueryInventoryRecipients() *InventoryRecipientQuery {
+	query := (&InventoryRecipientClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(group.Table, group.FieldID, selector),
+			sqlgraph.To(inventoryrecipient.Table, inventoryrecipient.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, group.InventoryRecipientsTable, group.InventoryRecipientsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryInventoryAssignments chains the current query on the "inventory_assignments" edge.
+func (_q *GroupQuery) QueryInventoryAssignments() *InventoryAssignmentQuery {
+	query := (&InventoryAssignmentClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(group.Table, group.FieldID, selector),
+			sqlgraph.To(inventoryassignment.Table, inventoryassignment.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, group.InventoryAssignmentsTable, group.InventoryAssignmentsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryInventoryTransactions chains the current query on the "inventory_transactions" edge.
+func (_q *GroupQuery) QueryInventoryTransactions() *InventoryTransactionQuery {
+	query := (&InventoryTransactionClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(group.Table, group.FieldID, selector),
+			sqlgraph.To(inventorytransaction.Table, inventorytransaction.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, group.InventoryTransactionsTable, group.InventoryTransactionsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
 // QueryUserGroups chains the current query on the "user_groups" edge.
 func (_q *GroupQuery) QueryUserGroups() *UserGroupQuery {
 	query := (&UserGroupClient{config: _q.config}).Query()
@@ -487,21 +559,24 @@ func (_q *GroupQuery) Clone() *GroupQuery {
 		return nil
 	}
 	return &GroupQuery{
-		config:               _q.config,
-		ctx:                  _q.ctx.Clone(),
-		order:                append([]group.OrderOption{}, _q.order...),
-		inters:               append([]Interceptor{}, _q.inters...),
-		predicates:           append([]predicate.Group{}, _q.predicates...),
-		withUsers:            _q.withUsers.Clone(),
-		withEntityTypes:      _q.withEntityTypes.Clone(),
-		withEntities:         _q.withEntities.Clone(),
-		withTags:             _q.withTags.Clone(),
-		withInvitationTokens: _q.withInvitationTokens.Clone(),
-		withNotifiers:        _q.withNotifiers.Clone(),
-		withEntityTemplates:  _q.withEntityTemplates.Clone(),
-		withExports:          _q.withExports.Clone(),
-		withLabelTemplates:   _q.withLabelTemplates.Clone(),
-		withUserGroups:       _q.withUserGroups.Clone(),
+		config:                    _q.config,
+		ctx:                       _q.ctx.Clone(),
+		order:                     append([]group.OrderOption{}, _q.order...),
+		inters:                    append([]Interceptor{}, _q.inters...),
+		predicates:                append([]predicate.Group{}, _q.predicates...),
+		withUsers:                 _q.withUsers.Clone(),
+		withEntityTypes:           _q.withEntityTypes.Clone(),
+		withEntities:              _q.withEntities.Clone(),
+		withTags:                  _q.withTags.Clone(),
+		withInvitationTokens:      _q.withInvitationTokens.Clone(),
+		withNotifiers:             _q.withNotifiers.Clone(),
+		withEntityTemplates:       _q.withEntityTemplates.Clone(),
+		withExports:               _q.withExports.Clone(),
+		withLabelTemplates:        _q.withLabelTemplates.Clone(),
+		withInventoryRecipients:   _q.withInventoryRecipients.Clone(),
+		withInventoryAssignments:  _q.withInventoryAssignments.Clone(),
+		withInventoryTransactions: _q.withInventoryTransactions.Clone(),
+		withUserGroups:            _q.withUserGroups.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -607,6 +682,39 @@ func (_q *GroupQuery) WithLabelTemplates(opts ...func(*LabelTemplateQuery)) *Gro
 	return _q
 }
 
+// WithInventoryRecipients tells the query-builder to eager-load the nodes that are connected to
+// the "inventory_recipients" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *GroupQuery) WithInventoryRecipients(opts ...func(*InventoryRecipientQuery)) *GroupQuery {
+	query := (&InventoryRecipientClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withInventoryRecipients = query
+	return _q
+}
+
+// WithInventoryAssignments tells the query-builder to eager-load the nodes that are connected to
+// the "inventory_assignments" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *GroupQuery) WithInventoryAssignments(opts ...func(*InventoryAssignmentQuery)) *GroupQuery {
+	query := (&InventoryAssignmentClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withInventoryAssignments = query
+	return _q
+}
+
+// WithInventoryTransactions tells the query-builder to eager-load the nodes that are connected to
+// the "inventory_transactions" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *GroupQuery) WithInventoryTransactions(opts ...func(*InventoryTransactionQuery)) *GroupQuery {
+	query := (&InventoryTransactionClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withInventoryTransactions = query
+	return _q
+}
+
 // WithUserGroups tells the query-builder to eager-load the nodes that are connected to
 // the "user_groups" edge. The optional arguments are used to configure the query builder of the edge.
 func (_q *GroupQuery) WithUserGroups(opts ...func(*UserGroupQuery)) *GroupQuery {
@@ -696,7 +804,7 @@ func (_q *GroupQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Group,
 	var (
 		nodes       = []*Group{}
 		_spec       = _q.querySpec()
-		loadedTypes = [10]bool{
+		loadedTypes = [13]bool{
 			_q.withUsers != nil,
 			_q.withEntityTypes != nil,
 			_q.withEntities != nil,
@@ -706,6 +814,9 @@ func (_q *GroupQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Group,
 			_q.withEntityTemplates != nil,
 			_q.withExports != nil,
 			_q.withLabelTemplates != nil,
+			_q.withInventoryRecipients != nil,
+			_q.withInventoryAssignments != nil,
+			_q.withInventoryTransactions != nil,
 			_q.withUserGroups != nil,
 		}
 	)
@@ -789,6 +900,33 @@ func (_q *GroupQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Group,
 		if err := _q.loadLabelTemplates(ctx, query, nodes,
 			func(n *Group) { n.Edges.LabelTemplates = []*LabelTemplate{} },
 			func(n *Group, e *LabelTemplate) { n.Edges.LabelTemplates = append(n.Edges.LabelTemplates, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withInventoryRecipients; query != nil {
+		if err := _q.loadInventoryRecipients(ctx, query, nodes,
+			func(n *Group) { n.Edges.InventoryRecipients = []*InventoryRecipient{} },
+			func(n *Group, e *InventoryRecipient) {
+				n.Edges.InventoryRecipients = append(n.Edges.InventoryRecipients, e)
+			}); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withInventoryAssignments; query != nil {
+		if err := _q.loadInventoryAssignments(ctx, query, nodes,
+			func(n *Group) { n.Edges.InventoryAssignments = []*InventoryAssignment{} },
+			func(n *Group, e *InventoryAssignment) {
+				n.Edges.InventoryAssignments = append(n.Edges.InventoryAssignments, e)
+			}); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withInventoryTransactions; query != nil {
+		if err := _q.loadInventoryTransactions(ctx, query, nodes,
+			func(n *Group) { n.Edges.InventoryTransactions = []*InventoryTransaction{} },
+			func(n *Group, e *InventoryTransaction) {
+				n.Edges.InventoryTransactions = append(n.Edges.InventoryTransactions, e)
+			}); err != nil {
 			return nil, err
 		}
 	}
@@ -1104,6 +1242,96 @@ func (_q *GroupQuery) loadLabelTemplates(ctx context.Context, query *LabelTempla
 		node, ok := nodeids[*fk]
 		if !ok {
 			return fmt.Errorf(`unexpected referenced foreign-key "group_label_templates" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *GroupQuery) loadInventoryRecipients(ctx context.Context, query *InventoryRecipientQuery, nodes []*Group, init func(*Group), assign func(*Group, *InventoryRecipient)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Group)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(inventoryrecipient.FieldGroupID)
+	}
+	query.Where(predicate.InventoryRecipient(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(group.InventoryRecipientsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.GroupID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "group_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *GroupQuery) loadInventoryAssignments(ctx context.Context, query *InventoryAssignmentQuery, nodes []*Group, init func(*Group), assign func(*Group, *InventoryAssignment)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Group)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(inventoryassignment.FieldGroupID)
+	}
+	query.Where(predicate.InventoryAssignment(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(group.InventoryAssignmentsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.GroupID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "group_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *GroupQuery) loadInventoryTransactions(ctx context.Context, query *InventoryTransactionQuery, nodes []*Group, init func(*Group), assign func(*Group, *InventoryTransaction)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Group)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(inventorytransaction.FieldGroupID)
+	}
+	query.Where(predicate.InventoryTransaction(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(group.InventoryTransactionsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.GroupID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "group_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}

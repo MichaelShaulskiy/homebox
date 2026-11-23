@@ -162,16 +162,18 @@ type (
 	}
 
 	EntitySummary struct {
-		ImportRef   string    `json:"-"`
-		ID          uuid.UUID `json:"id"`
-		AssetID     AssetID   `json:"assetId,string"`
-		Name        string    `json:"name"`
-		Description string    `json:"description"`
-		Quantity    float64   `json:"quantity"`
-		Insured     bool      `json:"insured"`
-		Archived    bool      `json:"archived"`
-		CreatedAt   time.Time `json:"createdAt"`
-		UpdatedAt   time.Time `json:"updatedAt"`
+		ImportRef         string    `json:"-"`
+		ID                uuid.UUID `json:"id"`
+		AssetID           AssetID   `json:"assetId,string"`
+		Name              string    `json:"name"`
+		Description       string    `json:"description"`
+		Quantity          float64   `json:"quantity"`
+		AvailableQuantity float64   `json:"availableQuantity"`
+		DefectiveQuantity float64   `json:"defectiveQuantity"`
+		Insured           bool      `json:"insured"`
+		Archived          bool      `json:"archived"`
+		CreatedAt         time.Time `json:"createdAt"`
+		UpdatedAt         time.Time `json:"updatedAt"`
 
 		PurchasePrice float64 `json:"purchasePrice"`
 
@@ -272,16 +274,18 @@ func mapEntitySummary(e *ent.Entity) EntitySummary {
 	}
 
 	return EntitySummary{
-		ID:            e.ID,
-		AssetID:       AssetID(e.AssetID),
-		Name:          e.Name,
-		Description:   e.Description,
-		ImportRef:     e.ImportRef,
-		Quantity:      e.Quantity,
-		CreatedAt:     e.CreatedAt,
-		UpdatedAt:     e.UpdatedAt,
-		Archived:      e.Archived,
-		PurchasePrice: e.PurchasePrice,
+		ID:                e.ID,
+		AssetID:           AssetID(e.AssetID),
+		Name:              e.Name,
+		Description:       e.Description,
+		ImportRef:         e.ImportRef,
+		Quantity:          e.Quantity,
+		AvailableQuantity: e.AvailableQuantity,
+		DefectiveQuantity: e.DefectiveQuantity,
+		CreatedAt:         e.CreatedAt,
+		UpdatedAt:         e.UpdatedAt,
+		Archived:          e.Archived,
+		PurchasePrice:     e.PurchasePrice,
 
 		// Edges
 		Parent:     parent,
@@ -1300,6 +1304,7 @@ func (r *EntityRepository) Create(ctx context.Context, gid uuid.UUID, data Entit
 		SetImportRef(data.ImportRef).
 		SetName(data.Name).
 		SetQuantity(data.Quantity).
+		SetAvailableQuantity(data.Quantity).
 		SetDescription(data.Description).
 		SetModelNumber(data.ModelNumber).
 		SetManufacturer(data.Manufacturer).
@@ -1448,6 +1453,7 @@ func (r *EntityRepository) CreateFromTemplate(ctx context.Context, gid uuid.UUID
 		SetName(data.Name).
 		SetDescription(data.Description).
 		SetQuantity(data.Quantity).
+		SetAvailableQuantity(data.Quantity).
 		SetGroupID(gid).
 		SetAssetID(int64(nextAssetID)).
 		SetInsured(data.Insured).
@@ -1773,6 +1779,19 @@ func (r *EntityRepository) UpdateByGroup(ctx context.Context, gid uuid.UUID, dat
 		recordSpanError(span, err)
 		return EntityOut{}, err
 	}
+	existingStock, err := r.db.Entity.Query().
+		Where(entity.ID(data.ID), entity.HasGroupWith(group.ID(gid))).
+		Only(ctx)
+	if err != nil {
+		recordSpanError(span, err)
+		return EntityOut{}, err
+	}
+	nextAvailable := existingStock.AvailableQuantity + (data.Quantity - existingStock.Quantity)
+	if nextAvailable < 0 {
+		err = fmt.Errorf("quantity cannot be reduced below issued stock")
+		recordSpanError(span, err)
+		return EntityOut{}, err
+	}
 
 	// The entity being updated must itself live in the caller's group. The
 	// group predicate on the update below makes a cross-tenant ID a silent
@@ -1832,6 +1851,7 @@ func (r *EntityRepository) UpdateByGroup(ctx context.Context, gid uuid.UUID, dat
 		SetInsured(data.Insured).
 		SetWarrantyDetails(data.WarrantyDetails).
 		SetQuantity(data.Quantity).
+		SetAvailableQuantity(nextAvailable).
 		SetAssetID(int64(data.AssetID)).
 		SetSyncChildEntityLocations(data.SyncChildEntityLocations)
 
@@ -2158,8 +2178,20 @@ func (r *EntityRepository) Patch(ctx context.Context, gid, id uuid.UUID, data En
 			recordSpanError(span, err)
 			return err
 		}
-
-		q.SetQuantity(*data.Quantity)
+		current, err := tx.Entity.Query().
+			Where(entity.ID(id), entity.HasGroupWith(group.ID(gid))).
+			Only(ctx)
+		if err != nil {
+			recordSpanError(span, err)
+			return err
+		}
+		nextAvailable := current.AvailableQuantity + (*data.Quantity - current.Quantity)
+		if nextAvailable < 0 {
+			err = fmt.Errorf("quantity cannot be reduced below issued stock")
+			recordSpanError(span, err)
+			return err
+		}
+		q.SetQuantity(*data.Quantity).SetAvailableQuantity(nextAvailable)
 	}
 
 	switch {
@@ -2546,6 +2578,7 @@ func (r *EntityRepository) Duplicate(ctx context.Context, gid, id uuid.UUID, opt
 		SetName(options.CopyPrefix + originalEntity.Name).
 		SetDescription(originalEntity.Description).
 		SetQuantity(originalEntity.Quantity).
+		SetAvailableQuantity(originalEntity.AvailableQuantity).
 		SetGroupID(gid).
 		SetAssetID(int64(nextAssetID)).
 		SetSerialNumber(originalEntity.SerialNumber).

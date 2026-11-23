@@ -141,6 +141,42 @@ func (f GroupInvitationTokenFunc) Mutate(ctx context.Context, m ent.Mutation) (e
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.GroupInvitationTokenMutation", m)
 }
 
+// The InventoryAssignmentFunc type is an adapter to allow the use of ordinary
+// function as InventoryAssignment mutator.
+type InventoryAssignmentFunc func(context.Context, *ent.InventoryAssignmentMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f InventoryAssignmentFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.InventoryAssignmentMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.InventoryAssignmentMutation", m)
+}
+
+// The InventoryRecipientFunc type is an adapter to allow the use of ordinary
+// function as InventoryRecipient mutator.
+type InventoryRecipientFunc func(context.Context, *ent.InventoryRecipientMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f InventoryRecipientFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.InventoryRecipientMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.InventoryRecipientMutation", m)
+}
+
+// The InventoryTransactionFunc type is an adapter to allow the use of ordinary
+// function as InventoryTransaction mutator.
+type InventoryTransactionFunc func(context.Context, *ent.InventoryTransactionMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f InventoryTransactionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.InventoryTransactionMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.InventoryTransactionMutation", m)
+}
+
 // The LabelTemplateFunc type is an adapter to allow the use of ordinary
 // function as LabelTemplate mutator.
 type LabelTemplateFunc func(context.Context, *ent.LabelTemplateMutation) (ent.Value, error)

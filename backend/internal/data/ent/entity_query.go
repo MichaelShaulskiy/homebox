@@ -18,6 +18,8 @@ import (
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/entityfield"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/entitytype"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/group"
+	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/inventoryassignment"
+	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/inventorytransaction"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/maintenanceentry"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/predicate"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/tag"
@@ -26,21 +28,23 @@ import (
 // EntityQuery is the builder for querying Entity entities.
 type EntityQuery struct {
 	config
-	ctx                    *QueryContext
-	order                  []entity.OrderOption
-	inters                 []Interceptor
-	predicates             []predicate.Entity
-	withGroup              *GroupQuery
-	withParent             *EntityQuery
-	withChildren           *EntityQuery
-	withLocation           *EntityQuery
-	withLocationEntities   *EntityQuery
-	withTag                *TagQuery
-	withEntityType         *EntityTypeQuery
-	withFields             *EntityFieldQuery
-	withMaintenanceEntries *MaintenanceEntryQuery
-	withAttachments        *AttachmentQuery
-	withFKs                bool
+	ctx                       *QueryContext
+	order                     []entity.OrderOption
+	inters                    []Interceptor
+	predicates                []predicate.Entity
+	withGroup                 *GroupQuery
+	withParent                *EntityQuery
+	withChildren              *EntityQuery
+	withLocation              *EntityQuery
+	withLocationEntities      *EntityQuery
+	withTag                   *TagQuery
+	withEntityType            *EntityTypeQuery
+	withFields                *EntityFieldQuery
+	withMaintenanceEntries    *MaintenanceEntryQuery
+	withAttachments           *AttachmentQuery
+	withInventoryAssignments  *InventoryAssignmentQuery
+	withInventoryTransactions *InventoryTransactionQuery
+	withFKs                   bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -297,6 +301,50 @@ func (_q *EntityQuery) QueryAttachments() *AttachmentQuery {
 	return query
 }
 
+// QueryInventoryAssignments chains the current query on the "inventory_assignments" edge.
+func (_q *EntityQuery) QueryInventoryAssignments() *InventoryAssignmentQuery {
+	query := (&InventoryAssignmentClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(entity.Table, entity.FieldID, selector),
+			sqlgraph.To(inventoryassignment.Table, inventoryassignment.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, entity.InventoryAssignmentsTable, entity.InventoryAssignmentsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryInventoryTransactions chains the current query on the "inventory_transactions" edge.
+func (_q *EntityQuery) QueryInventoryTransactions() *InventoryTransactionQuery {
+	query := (&InventoryTransactionClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(entity.Table, entity.FieldID, selector),
+			sqlgraph.To(inventorytransaction.Table, inventorytransaction.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, entity.InventoryTransactionsTable, entity.InventoryTransactionsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
 // First returns the first Entity entity from the query.
 // Returns a *NotFoundError when no Entity was found.
 func (_q *EntityQuery) First(ctx context.Context) (*Entity, error) {
@@ -484,21 +532,23 @@ func (_q *EntityQuery) Clone() *EntityQuery {
 		return nil
 	}
 	return &EntityQuery{
-		config:                 _q.config,
-		ctx:                    _q.ctx.Clone(),
-		order:                  append([]entity.OrderOption{}, _q.order...),
-		inters:                 append([]Interceptor{}, _q.inters...),
-		predicates:             append([]predicate.Entity{}, _q.predicates...),
-		withGroup:              _q.withGroup.Clone(),
-		withParent:             _q.withParent.Clone(),
-		withChildren:           _q.withChildren.Clone(),
-		withLocation:           _q.withLocation.Clone(),
-		withLocationEntities:   _q.withLocationEntities.Clone(),
-		withTag:                _q.withTag.Clone(),
-		withEntityType:         _q.withEntityType.Clone(),
-		withFields:             _q.withFields.Clone(),
-		withMaintenanceEntries: _q.withMaintenanceEntries.Clone(),
-		withAttachments:        _q.withAttachments.Clone(),
+		config:                    _q.config,
+		ctx:                       _q.ctx.Clone(),
+		order:                     append([]entity.OrderOption{}, _q.order...),
+		inters:                    append([]Interceptor{}, _q.inters...),
+		predicates:                append([]predicate.Entity{}, _q.predicates...),
+		withGroup:                 _q.withGroup.Clone(),
+		withParent:                _q.withParent.Clone(),
+		withChildren:              _q.withChildren.Clone(),
+		withLocation:              _q.withLocation.Clone(),
+		withLocationEntities:      _q.withLocationEntities.Clone(),
+		withTag:                   _q.withTag.Clone(),
+		withEntityType:            _q.withEntityType.Clone(),
+		withFields:                _q.withFields.Clone(),
+		withMaintenanceEntries:    _q.withMaintenanceEntries.Clone(),
+		withAttachments:           _q.withAttachments.Clone(),
+		withInventoryAssignments:  _q.withInventoryAssignments.Clone(),
+		withInventoryTransactions: _q.withInventoryTransactions.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -615,6 +665,28 @@ func (_q *EntityQuery) WithAttachments(opts ...func(*AttachmentQuery)) *EntityQu
 	return _q
 }
 
+// WithInventoryAssignments tells the query-builder to eager-load the nodes that are connected to
+// the "inventory_assignments" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *EntityQuery) WithInventoryAssignments(opts ...func(*InventoryAssignmentQuery)) *EntityQuery {
+	query := (&InventoryAssignmentClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withInventoryAssignments = query
+	return _q
+}
+
+// WithInventoryTransactions tells the query-builder to eager-load the nodes that are connected to
+// the "inventory_transactions" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *EntityQuery) WithInventoryTransactions(opts ...func(*InventoryTransactionQuery)) *EntityQuery {
+	query := (&InventoryTransactionClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withInventoryTransactions = query
+	return _q
+}
+
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
@@ -694,7 +766,7 @@ func (_q *EntityQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Entit
 		nodes       = []*Entity{}
 		withFKs     = _q.withFKs
 		_spec       = _q.querySpec()
-		loadedTypes = [10]bool{
+		loadedTypes = [12]bool{
 			_q.withGroup != nil,
 			_q.withParent != nil,
 			_q.withChildren != nil,
@@ -705,6 +777,8 @@ func (_q *EntityQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Entit
 			_q.withFields != nil,
 			_q.withMaintenanceEntries != nil,
 			_q.withAttachments != nil,
+			_q.withInventoryAssignments != nil,
+			_q.withInventoryTransactions != nil,
 		}
 	)
 	if _q.withGroup != nil || _q.withParent != nil || _q.withLocation != nil || _q.withEntityType != nil {
@@ -796,6 +870,24 @@ func (_q *EntityQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Entit
 		if err := _q.loadAttachments(ctx, query, nodes,
 			func(n *Entity) { n.Edges.Attachments = []*Attachment{} },
 			func(n *Entity, e *Attachment) { n.Edges.Attachments = append(n.Edges.Attachments, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withInventoryAssignments; query != nil {
+		if err := _q.loadInventoryAssignments(ctx, query, nodes,
+			func(n *Entity) { n.Edges.InventoryAssignments = []*InventoryAssignment{} },
+			func(n *Entity, e *InventoryAssignment) {
+				n.Edges.InventoryAssignments = append(n.Edges.InventoryAssignments, e)
+			}); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withInventoryTransactions; query != nil {
+		if err := _q.loadInventoryTransactions(ctx, query, nodes,
+			func(n *Entity) { n.Edges.InventoryTransactions = []*InventoryTransaction{} },
+			func(n *Entity, e *InventoryTransaction) {
+				n.Edges.InventoryTransactions = append(n.Edges.InventoryTransactions, e)
+			}); err != nil {
 			return nil, err
 		}
 	}
@@ -1140,6 +1232,66 @@ func (_q *EntityQuery) loadAttachments(ctx context.Context, query *AttachmentQue
 		node, ok := nodeids[*fk]
 		if !ok {
 			return fmt.Errorf(`unexpected referenced foreign-key "entity_attachments" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *EntityQuery) loadInventoryAssignments(ctx context.Context, query *InventoryAssignmentQuery, nodes []*Entity, init func(*Entity), assign func(*Entity, *InventoryAssignment)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Entity)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(inventoryassignment.FieldEntityID)
+	}
+	query.Where(predicate.InventoryAssignment(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(entity.InventoryAssignmentsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.EntityID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "entity_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *EntityQuery) loadInventoryTransactions(ctx context.Context, query *InventoryTransactionQuery, nodes []*Entity, init func(*Entity), assign func(*Entity, *InventoryTransaction)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Entity)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(inventorytransaction.FieldItemID)
+	}
+	query.Where(predicate.InventoryTransaction(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(entity.InventoryTransactionsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.ItemID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "item_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}

@@ -493,6 +493,75 @@ func HasLabelTemplatesWith(preds ...predicate.LabelTemplate) predicate.Group {
 	})
 }
 
+// HasInventoryRecipients applies the HasEdge predicate on the "inventory_recipients" edge.
+func HasInventoryRecipients() predicate.Group {
+	return predicate.Group(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, InventoryRecipientsTable, InventoryRecipientsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasInventoryRecipientsWith applies the HasEdge predicate on the "inventory_recipients" edge with a given conditions (other predicates).
+func HasInventoryRecipientsWith(preds ...predicate.InventoryRecipient) predicate.Group {
+	return predicate.Group(func(s *sql.Selector) {
+		step := newInventoryRecipientsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasInventoryAssignments applies the HasEdge predicate on the "inventory_assignments" edge.
+func HasInventoryAssignments() predicate.Group {
+	return predicate.Group(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, InventoryAssignmentsTable, InventoryAssignmentsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasInventoryAssignmentsWith applies the HasEdge predicate on the "inventory_assignments" edge with a given conditions (other predicates).
+func HasInventoryAssignmentsWith(preds ...predicate.InventoryAssignment) predicate.Group {
+	return predicate.Group(func(s *sql.Selector) {
+		step := newInventoryAssignmentsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasInventoryTransactions applies the HasEdge predicate on the "inventory_transactions" edge.
+func HasInventoryTransactions() predicate.Group {
+	return predicate.Group(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, InventoryTransactionsTable, InventoryTransactionsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasInventoryTransactionsWith applies the HasEdge predicate on the "inventory_transactions" edge with a given conditions (other predicates).
+func HasInventoryTransactionsWith(preds ...predicate.InventoryTransaction) predicate.Group {
+	return predicate.Group(func(s *sql.Selector) {
+		step := newInventoryTransactionsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasUserGroups applies the HasEdge predicate on the "user_groups" edge.
 func HasUserGroups() predicate.Group {
 	return predicate.Group(func(s *sql.Selector) {

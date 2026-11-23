@@ -17,6 +17,8 @@ import (
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/entityfield"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/entitytype"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/group"
+	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/inventoryassignment"
+	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/inventorytransaction"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/maintenanceentry"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/predicate"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/tag"
@@ -133,6 +135,48 @@ func (_u *EntityUpdate) SetNillableQuantity(v *float64) *EntityUpdate {
 // AddQuantity adds value to the "quantity" field.
 func (_u *EntityUpdate) AddQuantity(v float64) *EntityUpdate {
 	_u.mutation.AddQuantity(v)
+	return _u
+}
+
+// SetAvailableQuantity sets the "available_quantity" field.
+func (_u *EntityUpdate) SetAvailableQuantity(v float64) *EntityUpdate {
+	_u.mutation.ResetAvailableQuantity()
+	_u.mutation.SetAvailableQuantity(v)
+	return _u
+}
+
+// SetNillableAvailableQuantity sets the "available_quantity" field if the given value is not nil.
+func (_u *EntityUpdate) SetNillableAvailableQuantity(v *float64) *EntityUpdate {
+	if v != nil {
+		_u.SetAvailableQuantity(*v)
+	}
+	return _u
+}
+
+// AddAvailableQuantity adds value to the "available_quantity" field.
+func (_u *EntityUpdate) AddAvailableQuantity(v float64) *EntityUpdate {
+	_u.mutation.AddAvailableQuantity(v)
+	return _u
+}
+
+// SetDefectiveQuantity sets the "defective_quantity" field.
+func (_u *EntityUpdate) SetDefectiveQuantity(v float64) *EntityUpdate {
+	_u.mutation.ResetDefectiveQuantity()
+	_u.mutation.SetDefectiveQuantity(v)
+	return _u
+}
+
+// SetNillableDefectiveQuantity sets the "defective_quantity" field if the given value is not nil.
+func (_u *EntityUpdate) SetNillableDefectiveQuantity(v *float64) *EntityUpdate {
+	if v != nil {
+		_u.SetDefectiveQuantity(*v)
+	}
+	return _u
+}
+
+// AddDefectiveQuantity adds value to the "defective_quantity" field.
+func (_u *EntityUpdate) AddDefectiveQuantity(v float64) *EntityUpdate {
+	_u.mutation.AddDefectiveQuantity(v)
 	return _u
 }
 
@@ -605,6 +649,36 @@ func (_u *EntityUpdate) AddAttachments(v ...*Attachment) *EntityUpdate {
 	return _u.AddAttachmentIDs(ids...)
 }
 
+// AddInventoryAssignmentIDs adds the "inventory_assignments" edge to the InventoryAssignment entity by IDs.
+func (_u *EntityUpdate) AddInventoryAssignmentIDs(ids ...uuid.UUID) *EntityUpdate {
+	_u.mutation.AddInventoryAssignmentIDs(ids...)
+	return _u
+}
+
+// AddInventoryAssignments adds the "inventory_assignments" edges to the InventoryAssignment entity.
+func (_u *EntityUpdate) AddInventoryAssignments(v ...*InventoryAssignment) *EntityUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddInventoryAssignmentIDs(ids...)
+}
+
+// AddInventoryTransactionIDs adds the "inventory_transactions" edge to the InventoryTransaction entity by IDs.
+func (_u *EntityUpdate) AddInventoryTransactionIDs(ids ...uuid.UUID) *EntityUpdate {
+	_u.mutation.AddInventoryTransactionIDs(ids...)
+	return _u
+}
+
+// AddInventoryTransactions adds the "inventory_transactions" edges to the InventoryTransaction entity.
+func (_u *EntityUpdate) AddInventoryTransactions(v ...*InventoryTransaction) *EntityUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddInventoryTransactionIDs(ids...)
+}
+
 // Mutation returns the EntityMutation object of the builder.
 func (_u *EntityUpdate) Mutation() *EntityMutation {
 	return _u.mutation
@@ -760,6 +834,48 @@ func (_u *EntityUpdate) RemoveAttachments(v ...*Attachment) *EntityUpdate {
 	return _u.RemoveAttachmentIDs(ids...)
 }
 
+// ClearInventoryAssignments clears all "inventory_assignments" edges to the InventoryAssignment entity.
+func (_u *EntityUpdate) ClearInventoryAssignments() *EntityUpdate {
+	_u.mutation.ClearInventoryAssignments()
+	return _u
+}
+
+// RemoveInventoryAssignmentIDs removes the "inventory_assignments" edge to InventoryAssignment entities by IDs.
+func (_u *EntityUpdate) RemoveInventoryAssignmentIDs(ids ...uuid.UUID) *EntityUpdate {
+	_u.mutation.RemoveInventoryAssignmentIDs(ids...)
+	return _u
+}
+
+// RemoveInventoryAssignments removes "inventory_assignments" edges to InventoryAssignment entities.
+func (_u *EntityUpdate) RemoveInventoryAssignments(v ...*InventoryAssignment) *EntityUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveInventoryAssignmentIDs(ids...)
+}
+
+// ClearInventoryTransactions clears all "inventory_transactions" edges to the InventoryTransaction entity.
+func (_u *EntityUpdate) ClearInventoryTransactions() *EntityUpdate {
+	_u.mutation.ClearInventoryTransactions()
+	return _u
+}
+
+// RemoveInventoryTransactionIDs removes the "inventory_transactions" edge to InventoryTransaction entities by IDs.
+func (_u *EntityUpdate) RemoveInventoryTransactionIDs(ids ...uuid.UUID) *EntityUpdate {
+	_u.mutation.RemoveInventoryTransactionIDs(ids...)
+	return _u
+}
+
+// RemoveInventoryTransactions removes "inventory_transactions" edges to InventoryTransaction entities.
+func (_u *EntityUpdate) RemoveInventoryTransactions(v ...*InventoryTransaction) *EntityUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveInventoryTransactionIDs(ids...)
+}
+
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (_u *EntityUpdate) Save(ctx context.Context) (int, error) {
 	_u.defaults()
@@ -893,6 +1009,18 @@ func (_u *EntityUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.AddedQuantity(); ok {
 		_spec.AddField(entity.FieldQuantity, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.AvailableQuantity(); ok {
+		_spec.SetField(entity.FieldAvailableQuantity, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.AddedAvailableQuantity(); ok {
+		_spec.AddField(entity.FieldAvailableQuantity, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.DefectiveQuantity(); ok {
+		_spec.SetField(entity.FieldDefectiveQuantity, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.AddedDefectiveQuantity(); ok {
+		_spec.AddField(entity.FieldDefectiveQuantity, field.TypeFloat64, value)
 	}
 	if value, ok := _u.mutation.Insured(); ok {
 		_spec.SetField(entity.FieldInsured, field.TypeBool, value)
@@ -1370,6 +1498,96 @@ func (_u *EntityUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.InventoryAssignmentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   entity.InventoryAssignmentsTable,
+			Columns: []string{entity.InventoryAssignmentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(inventoryassignment.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedInventoryAssignmentsIDs(); len(nodes) > 0 && !_u.mutation.InventoryAssignmentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   entity.InventoryAssignmentsTable,
+			Columns: []string{entity.InventoryAssignmentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(inventoryassignment.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.InventoryAssignmentsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   entity.InventoryAssignmentsTable,
+			Columns: []string{entity.InventoryAssignmentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(inventoryassignment.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.InventoryTransactionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   entity.InventoryTransactionsTable,
+			Columns: []string{entity.InventoryTransactionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(inventorytransaction.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedInventoryTransactionsIDs(); len(nodes) > 0 && !_u.mutation.InventoryTransactionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   entity.InventoryTransactionsTable,
+			Columns: []string{entity.InventoryTransactionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(inventorytransaction.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.InventoryTransactionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   entity.InventoryTransactionsTable,
+			Columns: []string{entity.InventoryTransactionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(inventorytransaction.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{entity.Label}
@@ -1488,6 +1706,48 @@ func (_u *EntityUpdateOne) SetNillableQuantity(v *float64) *EntityUpdateOne {
 // AddQuantity adds value to the "quantity" field.
 func (_u *EntityUpdateOne) AddQuantity(v float64) *EntityUpdateOne {
 	_u.mutation.AddQuantity(v)
+	return _u
+}
+
+// SetAvailableQuantity sets the "available_quantity" field.
+func (_u *EntityUpdateOne) SetAvailableQuantity(v float64) *EntityUpdateOne {
+	_u.mutation.ResetAvailableQuantity()
+	_u.mutation.SetAvailableQuantity(v)
+	return _u
+}
+
+// SetNillableAvailableQuantity sets the "available_quantity" field if the given value is not nil.
+func (_u *EntityUpdateOne) SetNillableAvailableQuantity(v *float64) *EntityUpdateOne {
+	if v != nil {
+		_u.SetAvailableQuantity(*v)
+	}
+	return _u
+}
+
+// AddAvailableQuantity adds value to the "available_quantity" field.
+func (_u *EntityUpdateOne) AddAvailableQuantity(v float64) *EntityUpdateOne {
+	_u.mutation.AddAvailableQuantity(v)
+	return _u
+}
+
+// SetDefectiveQuantity sets the "defective_quantity" field.
+func (_u *EntityUpdateOne) SetDefectiveQuantity(v float64) *EntityUpdateOne {
+	_u.mutation.ResetDefectiveQuantity()
+	_u.mutation.SetDefectiveQuantity(v)
+	return _u
+}
+
+// SetNillableDefectiveQuantity sets the "defective_quantity" field if the given value is not nil.
+func (_u *EntityUpdateOne) SetNillableDefectiveQuantity(v *float64) *EntityUpdateOne {
+	if v != nil {
+		_u.SetDefectiveQuantity(*v)
+	}
+	return _u
+}
+
+// AddDefectiveQuantity adds value to the "defective_quantity" field.
+func (_u *EntityUpdateOne) AddDefectiveQuantity(v float64) *EntityUpdateOne {
+	_u.mutation.AddDefectiveQuantity(v)
 	return _u
 }
 
@@ -1960,6 +2220,36 @@ func (_u *EntityUpdateOne) AddAttachments(v ...*Attachment) *EntityUpdateOne {
 	return _u.AddAttachmentIDs(ids...)
 }
 
+// AddInventoryAssignmentIDs adds the "inventory_assignments" edge to the InventoryAssignment entity by IDs.
+func (_u *EntityUpdateOne) AddInventoryAssignmentIDs(ids ...uuid.UUID) *EntityUpdateOne {
+	_u.mutation.AddInventoryAssignmentIDs(ids...)
+	return _u
+}
+
+// AddInventoryAssignments adds the "inventory_assignments" edges to the InventoryAssignment entity.
+func (_u *EntityUpdateOne) AddInventoryAssignments(v ...*InventoryAssignment) *EntityUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddInventoryAssignmentIDs(ids...)
+}
+
+// AddInventoryTransactionIDs adds the "inventory_transactions" edge to the InventoryTransaction entity by IDs.
+func (_u *EntityUpdateOne) AddInventoryTransactionIDs(ids ...uuid.UUID) *EntityUpdateOne {
+	_u.mutation.AddInventoryTransactionIDs(ids...)
+	return _u
+}
+
+// AddInventoryTransactions adds the "inventory_transactions" edges to the InventoryTransaction entity.
+func (_u *EntityUpdateOne) AddInventoryTransactions(v ...*InventoryTransaction) *EntityUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddInventoryTransactionIDs(ids...)
+}
+
 // Mutation returns the EntityMutation object of the builder.
 func (_u *EntityUpdateOne) Mutation() *EntityMutation {
 	return _u.mutation
@@ -2113,6 +2403,48 @@ func (_u *EntityUpdateOne) RemoveAttachments(v ...*Attachment) *EntityUpdateOne 
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveAttachmentIDs(ids...)
+}
+
+// ClearInventoryAssignments clears all "inventory_assignments" edges to the InventoryAssignment entity.
+func (_u *EntityUpdateOne) ClearInventoryAssignments() *EntityUpdateOne {
+	_u.mutation.ClearInventoryAssignments()
+	return _u
+}
+
+// RemoveInventoryAssignmentIDs removes the "inventory_assignments" edge to InventoryAssignment entities by IDs.
+func (_u *EntityUpdateOne) RemoveInventoryAssignmentIDs(ids ...uuid.UUID) *EntityUpdateOne {
+	_u.mutation.RemoveInventoryAssignmentIDs(ids...)
+	return _u
+}
+
+// RemoveInventoryAssignments removes "inventory_assignments" edges to InventoryAssignment entities.
+func (_u *EntityUpdateOne) RemoveInventoryAssignments(v ...*InventoryAssignment) *EntityUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveInventoryAssignmentIDs(ids...)
+}
+
+// ClearInventoryTransactions clears all "inventory_transactions" edges to the InventoryTransaction entity.
+func (_u *EntityUpdateOne) ClearInventoryTransactions() *EntityUpdateOne {
+	_u.mutation.ClearInventoryTransactions()
+	return _u
+}
+
+// RemoveInventoryTransactionIDs removes the "inventory_transactions" edge to InventoryTransaction entities by IDs.
+func (_u *EntityUpdateOne) RemoveInventoryTransactionIDs(ids ...uuid.UUID) *EntityUpdateOne {
+	_u.mutation.RemoveInventoryTransactionIDs(ids...)
+	return _u
+}
+
+// RemoveInventoryTransactions removes "inventory_transactions" edges to InventoryTransaction entities.
+func (_u *EntityUpdateOne) RemoveInventoryTransactions(v ...*InventoryTransaction) *EntityUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveInventoryTransactionIDs(ids...)
 }
 
 // Where appends a list predicates to the EntityUpdate builder.
@@ -2278,6 +2610,18 @@ func (_u *EntityUpdateOne) sqlSave(ctx context.Context) (_node *Entity, err erro
 	}
 	if value, ok := _u.mutation.AddedQuantity(); ok {
 		_spec.AddField(entity.FieldQuantity, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.AvailableQuantity(); ok {
+		_spec.SetField(entity.FieldAvailableQuantity, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.AddedAvailableQuantity(); ok {
+		_spec.AddField(entity.FieldAvailableQuantity, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.DefectiveQuantity(); ok {
+		_spec.SetField(entity.FieldDefectiveQuantity, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.AddedDefectiveQuantity(); ok {
+		_spec.AddField(entity.FieldDefectiveQuantity, field.TypeFloat64, value)
 	}
 	if value, ok := _u.mutation.Insured(); ok {
 		_spec.SetField(entity.FieldInsured, field.TypeBool, value)
@@ -2748,6 +3092,96 @@ func (_u *EntityUpdateOne) sqlSave(ctx context.Context) (_node *Entity, err erro
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(attachment.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.InventoryAssignmentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   entity.InventoryAssignmentsTable,
+			Columns: []string{entity.InventoryAssignmentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(inventoryassignment.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedInventoryAssignmentsIDs(); len(nodes) > 0 && !_u.mutation.InventoryAssignmentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   entity.InventoryAssignmentsTable,
+			Columns: []string{entity.InventoryAssignmentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(inventoryassignment.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.InventoryAssignmentsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   entity.InventoryAssignmentsTable,
+			Columns: []string{entity.InventoryAssignmentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(inventoryassignment.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.InventoryTransactionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   entity.InventoryTransactionsTable,
+			Columns: []string{entity.InventoryTransactionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(inventorytransaction.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedInventoryTransactionsIDs(); len(nodes) > 0 && !_u.mutation.InventoryTransactionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   entity.InventoryTransactionsTable,
+			Columns: []string{entity.InventoryTransactionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(inventorytransaction.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.InventoryTransactionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   entity.InventoryTransactionsTable,
+			Columns: []string{entity.InventoryTransactionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(inventorytransaction.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

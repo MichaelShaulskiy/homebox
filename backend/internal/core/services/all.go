@@ -17,6 +17,7 @@ type AllServices struct {
 	BackgroundService *BackgroundService
 	Exports           *ExportService
 	Currencies        *currencies.CurrencyRegistry
+	Inventory         *InventoryService
 }
 
 type OptionsFunc func(*options)
@@ -127,5 +128,6 @@ func New(repos *repo.AllRepos, opts ...OptionsFunc) *AllServices {
 			dialect:    options.dialect,
 		},
 		Currencies: currencies.NewCurrencyService(options.currencies),
+		Inventory:  &InventoryService{repos: repos},
 	}
 }

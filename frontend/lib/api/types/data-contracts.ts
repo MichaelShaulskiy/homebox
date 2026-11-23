@@ -54,6 +54,14 @@ export enum LabelmakerBarcodeFormat {
   BarcodeUPCA = "upca",
 }
 
+export enum InventorytransactionActionType {
+  ActionTypeISSUED = "ISSUED",
+  ActionTypeRETURNEDOK = "RETURNED_OK",
+  ActionTypeRETURNEDDEFECTIVE = "RETURNED_DEFECTIVE",
+  ActionTypeWRITTENOFF = "WRITTEN_OFF",
+  ActionTypeSTOCKADDED = "STOCK_ADDED",
+}
+
 export enum ExportStatus {
   DefaultStatus = "pending",
   StatusPending = "pending",
@@ -205,8 +213,12 @@ export interface EntEntity {
   archived: boolean;
   /** AssetID holds the value of the "asset_id" field. */
   asset_id: number;
+  /** AvailableQuantity holds the value of the "available_quantity" field. */
+  available_quantity: number;
   /** CreatedAt holds the value of the "created_at" field. */
   created_at: string;
+  /** DefectiveQuantity holds the value of the "defective_quantity" field. */
+  defective_quantity: number;
   /** Description holds the value of the "description" field. */
   description: string;
   /**
@@ -269,6 +281,10 @@ export interface EntEntityEdges {
   fields: EntEntityField[];
   /** Group holds the value of the group edge. */
   group: EntGroup;
+  /** InventoryAssignments holds the value of the inventory_assignments edge. */
+  inventory_assignments: EntInventoryAssignment[];
+  /** InventoryTransactions holds the value of the inventory_transactions edge. */
+  inventory_transactions: EntInventoryTransaction[];
   /** Location holds the value of the location edge. */
   location: EntEntity;
   /** LocationEntities holds the value of the location_entities edge. */
@@ -458,6 +474,12 @@ export interface EntGroupEdges {
   entity_types: EntEntityType[];
   /** Exports holds the value of the exports edge. */
   exports: EntExport[];
+  /** InventoryAssignments holds the value of the inventory_assignments edge. */
+  inventory_assignments: EntInventoryAssignment[];
+  /** InventoryRecipients holds the value of the inventory_recipients edge. */
+  inventory_recipients: EntInventoryRecipient[];
+  /** InventoryTransactions holds the value of the inventory_transactions edge. */
+  inventory_transactions: EntInventoryTransaction[];
   /** InvitationTokens holds the value of the invitation_tokens edge. */
   invitation_tokens: EntGroupInvitationToken[];
   /** LabelTemplates holds the value of the label_templates edge. */
@@ -495,6 +517,131 @@ export interface EntGroupInvitationToken {
 export interface EntGroupInvitationTokenEdges {
   /** Group holds the value of the group edge. */
   group: EntGroup;
+}
+
+export interface EntInventoryAssignment {
+  /** AssetTag holds the value of the "asset_tag" field. */
+  asset_tag: string;
+  /** CreatedAt holds the value of the "created_at" field. */
+  created_at: string;
+  /**
+   * Edges holds the relations/edges for other nodes in the graph.
+   * The values are being populated by the InventoryAssignmentQuery when eager-loading is set.
+   */
+  edges: EntInventoryAssignmentEdges;
+  /** EntityID holds the value of the "entity_id" field. */
+  entity_id: string;
+  /** GroupID holds the value of the "group_id" field. */
+  group_id: string;
+  /** ID of the ent. */
+  id: string;
+  /** IssuedAt holds the value of the "issued_at" field. */
+  issued_at: string;
+  /** Note holds the value of the "note" field. */
+  note: string;
+  /** Quantity holds the value of the "quantity" field. */
+  quantity: number;
+  /** RecipientID holds the value of the "recipient_id" field. */
+  recipient_id: string;
+  /** ReturnedAt holds the value of the "returned_at" field. */
+  returned_at: string;
+  /** SerialNumber holds the value of the "serial_number" field. */
+  serial_number: string;
+  /** UpdatedAt holds the value of the "updated_at" field. */
+  updated_at: string;
+}
+
+export interface EntInventoryAssignmentEdges {
+  /** Entity holds the value of the entity edge. */
+  entity: EntEntity;
+  /** Group holds the value of the group edge. */
+  group: EntGroup;
+  /** Recipient holds the value of the recipient edge. */
+  recipient: EntInventoryRecipient;
+}
+
+export interface EntInventoryRecipient {
+  /** CreatedAt holds the value of the "created_at" field. */
+  created_at: string;
+  /** Department holds the value of the "department" field. */
+  department: string;
+  /**
+   * Edges holds the relations/edges for other nodes in the graph.
+   * The values are being populated by the InventoryRecipientQuery when eager-loading is set.
+   */
+  edges: EntInventoryRecipientEdges;
+  /** Email holds the value of the "email" field. */
+  email: string;
+  /** FirstName holds the value of the "first_name" field. */
+  first_name: string;
+  /** GroupID holds the value of the "group_id" field. */
+  group_id: string;
+  /** ID of the ent. */
+  id: string;
+  /** IsActive holds the value of the "is_active" field. */
+  is_active: boolean;
+  /** LastName holds the value of the "last_name" field. */
+  last_name: string;
+  /** UpdatedAt holds the value of the "updated_at" field. */
+  updated_at: string;
+}
+
+export interface EntInventoryRecipientEdges {
+  /** Assignments holds the value of the assignments edge. */
+  assignments: EntInventoryAssignment[];
+  /** Group holds the value of the group edge. */
+  group: EntGroup;
+  /** InventoryTransactions holds the value of the inventory_transactions edge. */
+  inventory_transactions: EntInventoryTransaction[];
+}
+
+export interface EntInventoryTransaction {
+  /** ActionType holds the value of the "action_type" field. */
+  action_type: InventorytransactionActionType;
+  /** AssetTag holds the value of the "asset_tag" field. */
+  asset_tag: string;
+  /** CreatedAt holds the value of the "created_at" field. */
+  created_at: string;
+  /**
+   * Edges holds the relations/edges for other nodes in the graph.
+   * The values are being populated by the InventoryTransactionQuery when eager-loading is set.
+   */
+  edges: EntInventoryTransactionEdges;
+  /** GroupID holds the value of the "group_id" field. */
+  group_id: string;
+  /** ID of the ent. */
+  id: string;
+  /** ItemID holds the value of the "item_id" field. */
+  item_id: string;
+  /** ItemName holds the value of the "item_name" field. */
+  item_name: string;
+  /** PerformedByAdminID holds the value of the "performed_by_admin_id" field. */
+  performed_by_admin_id: string;
+  /** PerformedByAdminName holds the value of the "performed_by_admin_name" field. */
+  performed_by_admin_name: string;
+  /** Quantity holds the value of the "quantity" field. */
+  quantity: number;
+  /** ReasonOrNote holds the value of the "reason_or_note" field. */
+  reason_or_note: string;
+  /** SerialNumber holds the value of the "serial_number" field. */
+  serial_number: string;
+  /** TargetUserID holds the value of the "target_user_id" field. */
+  target_user_id: string;
+  /** TargetUserName holds the value of the "target_user_name" field. */
+  target_user_name: string;
+  /** Timestamp holds the value of the "timestamp" field. */
+  timestamp: string;
+  /** UpdatedAt holds the value of the "updated_at" field. */
+  updated_at: string;
+}
+
+export interface EntInventoryTransactionEdges {
+  /** Entity holds the value of the entity edge. */
+  entity: EntEntity;
+  /** Group holds the value of the group edge. */
+  group: EntGroup;
+  /** Recipient holds the value of the recipient edge. */
+  recipient: EntInventoryRecipient;
 }
 
 export interface EntLabelTemplate {
@@ -942,9 +1089,11 @@ export interface EntityOut {
   /** @example "0" */
   assetId: string;
   attachments: ItemAttachment[];
+  availableQuantity: number;
   /** Container-specific fields (for entities whose entity_type.is_location = true) */
   children: EntitySummary[];
   createdAt: Date | string;
+  defectiveQuantity: number;
   description: string;
   entityType?: EntityTypeSummary | null;
   fields: EntityFieldData[];
@@ -1012,7 +1161,9 @@ export interface EntitySummary {
   archived: boolean;
   /** @example "0" */
   assetId: string;
+  availableQuantity: number;
   createdAt: Date | string;
+  defectiveQuantity: number;
   description: string;
   entityType?: EntityTypeSummary | null;
   id: string;
@@ -1257,6 +1408,117 @@ export interface GroupStatistics {
 export interface GroupUpdate {
   currency: string;
   name: string;
+}
+
+export interface InventoryAssignmentOut {
+  assetTag: string;
+  id: string;
+  issuedAt: string;
+  itemId: string;
+  itemName: string;
+  note: string;
+  quantity: number;
+  recipientId: string;
+  recipientName: string;
+  returnedAt: string;
+  serialNumber: string;
+}
+
+export interface InventoryIssueInput {
+  /** @maxLength 255 */
+  assetTag: string;
+  itemId: string;
+  /** @maxLength 2000 */
+  note: string;
+  quantity: number;
+  recipientId: string;
+  /** @maxLength 255 */
+  serialNumber: string;
+}
+
+export interface InventoryRecipientCreate {
+  /** @maxLength 255 */
+  department: string;
+  /** @maxLength 255 */
+  email: string;
+  /**
+   * @minLength 1
+   * @maxLength 255
+   */
+  firstName: string;
+  isActive: boolean;
+  /**
+   * @minLength 1
+   * @maxLength 255
+   */
+  lastName: string;
+}
+
+export interface InventoryRecipientOut {
+  createdAt: Date | string;
+  department: string;
+  email: string;
+  firstName: string;
+  id: string;
+  isActive: boolean;
+  lastName: string;
+  updatedAt: Date | string;
+}
+
+export interface InventoryRecipientUpdate {
+  /** @maxLength 255 */
+  department: string;
+  /** @maxLength 255 */
+  email: string;
+  /**
+   * @minLength 1
+   * @maxLength 255
+   */
+  firstName: string;
+  isActive: boolean;
+  /**
+   * @minLength 1
+   * @maxLength 255
+   */
+  lastName: string;
+}
+
+export interface InventoryReturnInput {
+  assignmentId: string;
+  quantity: number;
+  /** @maxLength 2000 */
+  reasonOrNote: string;
+  status: "OK" | "DEFECTIVE" | "WRITTEN_OFF";
+}
+
+export interface InventoryStockAddInput {
+  itemId: string;
+  quantity: number;
+  /** @maxLength 2000 */
+  reasonOrNote: string;
+}
+
+export interface InventoryStockWriteOffInput {
+  itemId: string;
+  quantity: number;
+  /** @maxLength 2000 */
+  reasonOrNote: string;
+}
+
+export interface InventoryTransactionOut {
+  actionType: string;
+  assetTag: string;
+  id: string;
+  itemId: string;
+  itemName: string;
+  performedByAdminId: string;
+  performedByAdminName: string;
+  quantity: number;
+  reasonOrNote: string;
+  serialNumber: string;
+  targetUserId: string;
+  targetUserName: string;
+  timestamp: string;
 }
 
 export interface ItemAttachment {

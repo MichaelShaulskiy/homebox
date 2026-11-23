@@ -52,11 +52,17 @@ type GroupEdges struct {
 	Exports []*Export `json:"exports,omitempty"`
 	// LabelTemplates holds the value of the label_templates edge.
 	LabelTemplates []*LabelTemplate `json:"label_templates,omitempty"`
+	// InventoryRecipients holds the value of the inventory_recipients edge.
+	InventoryRecipients []*InventoryRecipient `json:"inventory_recipients,omitempty"`
+	// InventoryAssignments holds the value of the inventory_assignments edge.
+	InventoryAssignments []*InventoryAssignment `json:"inventory_assignments,omitempty"`
+	// InventoryTransactions holds the value of the inventory_transactions edge.
+	InventoryTransactions []*InventoryTransaction `json:"inventory_transactions,omitempty"`
 	// UserGroups holds the value of the user_groups edge.
 	UserGroups []*UserGroup `json:"user_groups,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [10]bool
+	loadedTypes [13]bool
 }
 
 // UsersOrErr returns the Users value or an error if the edge
@@ -140,10 +146,37 @@ func (e GroupEdges) LabelTemplatesOrErr() ([]*LabelTemplate, error) {
 	return nil, &NotLoadedError{edge: "label_templates"}
 }
 
+// InventoryRecipientsOrErr returns the InventoryRecipients value or an error if the edge
+// was not loaded in eager-loading.
+func (e GroupEdges) InventoryRecipientsOrErr() ([]*InventoryRecipient, error) {
+	if e.loadedTypes[9] {
+		return e.InventoryRecipients, nil
+	}
+	return nil, &NotLoadedError{edge: "inventory_recipients"}
+}
+
+// InventoryAssignmentsOrErr returns the InventoryAssignments value or an error if the edge
+// was not loaded in eager-loading.
+func (e GroupEdges) InventoryAssignmentsOrErr() ([]*InventoryAssignment, error) {
+	if e.loadedTypes[10] {
+		return e.InventoryAssignments, nil
+	}
+	return nil, &NotLoadedError{edge: "inventory_assignments"}
+}
+
+// InventoryTransactionsOrErr returns the InventoryTransactions value or an error if the edge
+// was not loaded in eager-loading.
+func (e GroupEdges) InventoryTransactionsOrErr() ([]*InventoryTransaction, error) {
+	if e.loadedTypes[11] {
+		return e.InventoryTransactions, nil
+	}
+	return nil, &NotLoadedError{edge: "inventory_transactions"}
+}
+
 // UserGroupsOrErr returns the UserGroups value or an error if the edge
 // was not loaded in eager-loading.
 func (e GroupEdges) UserGroupsOrErr() ([]*UserGroup, error) {
-	if e.loadedTypes[9] {
+	if e.loadedTypes[12] {
 		return e.UserGroups, nil
 	}
 	return nil, &NotLoadedError{edge: "user_groups"}
@@ -261,6 +294,21 @@ func (_m *Group) QueryExports() *ExportQuery {
 // QueryLabelTemplates queries the "label_templates" edge of the Group entity.
 func (_m *Group) QueryLabelTemplates() *LabelTemplateQuery {
 	return NewGroupClient(_m.config).QueryLabelTemplates(_m)
+}
+
+// QueryInventoryRecipients queries the "inventory_recipients" edge of the Group entity.
+func (_m *Group) QueryInventoryRecipients() *InventoryRecipientQuery {
+	return NewGroupClient(_m.config).QueryInventoryRecipients(_m)
+}
+
+// QueryInventoryAssignments queries the "inventory_assignments" edge of the Group entity.
+func (_m *Group) QueryInventoryAssignments() *InventoryAssignmentQuery {
+	return NewGroupClient(_m.config).QueryInventoryAssignments(_m)
+}
+
+// QueryInventoryTransactions queries the "inventory_transactions" edge of the Group entity.
+func (_m *Group) QueryInventoryTransactions() *InventoryTransactionQuery {
+	return NewGroupClient(_m.config).QueryInventoryTransactions(_m)
 }
 
 // QueryUserGroups queries the "user_groups" edge of the Group entity.

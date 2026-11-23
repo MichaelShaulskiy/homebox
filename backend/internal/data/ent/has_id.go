@@ -48,6 +48,18 @@ func (_m *GroupInvitationToken) GetID() uuid.UUID {
 	return _m.ID
 }
 
+func (_m *InventoryAssignment) GetID() uuid.UUID {
+	return _m.ID
+}
+
+func (_m *InventoryRecipient) GetID() uuid.UUID {
+	return _m.ID
+}
+
+func (_m *InventoryTransaction) GetID() uuid.UUID {
+	return _m.ID
+}
+
 func (_m *LabelTemplate) GetID() uuid.UUID {
 	return _m.ID
 }

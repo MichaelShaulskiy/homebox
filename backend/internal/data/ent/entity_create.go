@@ -16,6 +16,8 @@ import (
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/entityfield"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/entitytype"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/group"
+	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/inventoryassignment"
+	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/inventorytransaction"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/maintenanceentry"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/tag"
 )
@@ -113,6 +115,34 @@ func (_c *EntityCreate) SetQuantity(v float64) *EntityCreate {
 func (_c *EntityCreate) SetNillableQuantity(v *float64) *EntityCreate {
 	if v != nil {
 		_c.SetQuantity(*v)
+	}
+	return _c
+}
+
+// SetAvailableQuantity sets the "available_quantity" field.
+func (_c *EntityCreate) SetAvailableQuantity(v float64) *EntityCreate {
+	_c.mutation.SetAvailableQuantity(v)
+	return _c
+}
+
+// SetNillableAvailableQuantity sets the "available_quantity" field if the given value is not nil.
+func (_c *EntityCreate) SetNillableAvailableQuantity(v *float64) *EntityCreate {
+	if v != nil {
+		_c.SetAvailableQuantity(*v)
+	}
+	return _c
+}
+
+// SetDefectiveQuantity sets the "defective_quantity" field.
+func (_c *EntityCreate) SetDefectiveQuantity(v float64) *EntityCreate {
+	_c.mutation.SetDefectiveQuantity(v)
+	return _c
+}
+
+// SetNillableDefectiveQuantity sets the "defective_quantity" field if the given value is not nil.
+func (_c *EntityCreate) SetNillableDefectiveQuantity(v *float64) *EntityCreate {
+	if v != nil {
+		_c.SetDefectiveQuantity(*v)
 	}
 	return _c
 }
@@ -519,6 +549,36 @@ func (_c *EntityCreate) AddAttachments(v ...*Attachment) *EntityCreate {
 	return _c.AddAttachmentIDs(ids...)
 }
 
+// AddInventoryAssignmentIDs adds the "inventory_assignments" edge to the InventoryAssignment entity by IDs.
+func (_c *EntityCreate) AddInventoryAssignmentIDs(ids ...uuid.UUID) *EntityCreate {
+	_c.mutation.AddInventoryAssignmentIDs(ids...)
+	return _c
+}
+
+// AddInventoryAssignments adds the "inventory_assignments" edges to the InventoryAssignment entity.
+func (_c *EntityCreate) AddInventoryAssignments(v ...*InventoryAssignment) *EntityCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddInventoryAssignmentIDs(ids...)
+}
+
+// AddInventoryTransactionIDs adds the "inventory_transactions" edge to the InventoryTransaction entity by IDs.
+func (_c *EntityCreate) AddInventoryTransactionIDs(ids ...uuid.UUID) *EntityCreate {
+	_c.mutation.AddInventoryTransactionIDs(ids...)
+	return _c
+}
+
+// AddInventoryTransactions adds the "inventory_transactions" edges to the InventoryTransaction entity.
+func (_c *EntityCreate) AddInventoryTransactions(v ...*InventoryTransaction) *EntityCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddInventoryTransactionIDs(ids...)
+}
+
 // Mutation returns the EntityMutation object of the builder.
 func (_c *EntityCreate) Mutation() *EntityMutation {
 	return _c.mutation
@@ -565,6 +625,14 @@ func (_c *EntityCreate) defaults() {
 	if _, ok := _c.mutation.Quantity(); !ok {
 		v := entity.DefaultQuantity
 		_c.mutation.SetQuantity(v)
+	}
+	if _, ok := _c.mutation.AvailableQuantity(); !ok {
+		v := entity.DefaultAvailableQuantity
+		_c.mutation.SetAvailableQuantity(v)
+	}
+	if _, ok := _c.mutation.DefectiveQuantity(); !ok {
+		v := entity.DefaultDefectiveQuantity
+		_c.mutation.SetDefectiveQuantity(v)
 	}
 	if _, ok := _c.mutation.Insured(); !ok {
 		v := entity.DefaultInsured
@@ -633,6 +701,12 @@ func (_c *EntityCreate) check() error {
 	}
 	if _, ok := _c.mutation.Quantity(); !ok {
 		return &ValidationError{Name: "quantity", err: errors.New(`ent: missing required field "Entity.quantity"`)}
+	}
+	if _, ok := _c.mutation.AvailableQuantity(); !ok {
+		return &ValidationError{Name: "available_quantity", err: errors.New(`ent: missing required field "Entity.available_quantity"`)}
+	}
+	if _, ok := _c.mutation.DefectiveQuantity(); !ok {
+		return &ValidationError{Name: "defective_quantity", err: errors.New(`ent: missing required field "Entity.defective_quantity"`)}
 	}
 	if _, ok := _c.mutation.Insured(); !ok {
 		return &ValidationError{Name: "insured", err: errors.New(`ent: missing required field "Entity.insured"`)}
@@ -748,6 +822,14 @@ func (_c *EntityCreate) createSpec() (*Entity, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.Quantity(); ok {
 		_spec.SetField(entity.FieldQuantity, field.TypeFloat64, value)
 		_node.Quantity = value
+	}
+	if value, ok := _c.mutation.AvailableQuantity(); ok {
+		_spec.SetField(entity.FieldAvailableQuantity, field.TypeFloat64, value)
+		_node.AvailableQuantity = value
+	}
+	if value, ok := _c.mutation.DefectiveQuantity(); ok {
+		_spec.SetField(entity.FieldDefectiveQuantity, field.TypeFloat64, value)
+		_node.DefectiveQuantity = value
 	}
 	if value, ok := _c.mutation.Insured(); ok {
 		_spec.SetField(entity.FieldInsured, field.TypeBool, value)
@@ -974,6 +1056,38 @@ func (_c *EntityCreate) createSpec() (*Entity, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(attachment.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.InventoryAssignmentsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   entity.InventoryAssignmentsTable,
+			Columns: []string{entity.InventoryAssignmentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(inventoryassignment.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.InventoryTransactionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   entity.InventoryTransactionsTable,
+			Columns: []string{entity.InventoryTransactionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(inventorytransaction.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

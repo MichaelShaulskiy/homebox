@@ -34,6 +34,10 @@ type Entity struct {
 	Notes string `json:"notes,omitempty"`
 	// Quantity holds the value of the "quantity" field.
 	Quantity float64 `json:"quantity,omitempty"`
+	// AvailableQuantity holds the value of the "available_quantity" field.
+	AvailableQuantity float64 `json:"available_quantity,omitempty"`
+	// DefectiveQuantity holds the value of the "defective_quantity" field.
+	DefectiveQuantity float64 `json:"defective_quantity,omitempty"`
 	// Insured holds the value of the "insured" field.
 	Insured bool `json:"insured,omitempty"`
 	// Archived holds the value of the "archived" field.
@@ -100,9 +104,13 @@ type EntityEdges struct {
 	MaintenanceEntries []*MaintenanceEntry `json:"maintenance_entries,omitempty"`
 	// Attachments holds the value of the attachments edge.
 	Attachments []*Attachment `json:"attachments,omitempty"`
+	// InventoryAssignments holds the value of the inventory_assignments edge.
+	InventoryAssignments []*InventoryAssignment `json:"inventory_assignments,omitempty"`
+	// InventoryTransactions holds the value of the inventory_transactions edge.
+	InventoryTransactions []*InventoryTransaction `json:"inventory_transactions,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [10]bool
+	loadedTypes [12]bool
 }
 
 // GroupOrErr returns the Group value or an error if the edge
@@ -203,6 +211,24 @@ func (e EntityEdges) AttachmentsOrErr() ([]*Attachment, error) {
 	return nil, &NotLoadedError{edge: "attachments"}
 }
 
+// InventoryAssignmentsOrErr returns the InventoryAssignments value or an error if the edge
+// was not loaded in eager-loading.
+func (e EntityEdges) InventoryAssignmentsOrErr() ([]*InventoryAssignment, error) {
+	if e.loadedTypes[10] {
+		return e.InventoryAssignments, nil
+	}
+	return nil, &NotLoadedError{edge: "inventory_assignments"}
+}
+
+// InventoryTransactionsOrErr returns the InventoryTransactions value or an error if the edge
+// was not loaded in eager-loading.
+func (e EntityEdges) InventoryTransactionsOrErr() ([]*InventoryTransaction, error) {
+	if e.loadedTypes[11] {
+		return e.InventoryTransactions, nil
+	}
+	return nil, &NotLoadedError{edge: "inventory_transactions"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*Entity) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
@@ -210,7 +236,7 @@ func (*Entity) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case entity.FieldInsured, entity.FieldArchived, entity.FieldSyncChildEntityLocations, entity.FieldLifetimeWarranty:
 			values[i] = new(sql.NullBool)
-		case entity.FieldQuantity, entity.FieldPurchasePrice, entity.FieldSoldPrice:
+		case entity.FieldQuantity, entity.FieldAvailableQuantity, entity.FieldDefectiveQuantity, entity.FieldPurchasePrice, entity.FieldSoldPrice:
 			values[i] = new(sql.NullFloat64)
 		case entity.FieldAssetID:
 			values[i] = new(sql.NullInt64)
@@ -290,6 +316,18 @@ func (_m *Entity) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field quantity", values[i])
 			} else if value.Valid {
 				_m.Quantity = value.Float64
+			}
+		case entity.FieldAvailableQuantity:
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
+				return fmt.Errorf("unexpected type %T for field available_quantity", values[i])
+			} else if value.Valid {
+				_m.AvailableQuantity = value.Float64
+			}
+		case entity.FieldDefectiveQuantity:
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
+				return fmt.Errorf("unexpected type %T for field defective_quantity", values[i])
+			} else if value.Valid {
+				_m.DefectiveQuantity = value.Float64
 			}
 		case entity.FieldInsured:
 			if value, ok := values[i].(*sql.NullBool); !ok {
@@ -484,6 +522,16 @@ func (_m *Entity) QueryAttachments() *AttachmentQuery {
 	return NewEntityClient(_m.config).QueryAttachments(_m)
 }
 
+// QueryInventoryAssignments queries the "inventory_assignments" edge of the Entity entity.
+func (_m *Entity) QueryInventoryAssignments() *InventoryAssignmentQuery {
+	return NewEntityClient(_m.config).QueryInventoryAssignments(_m)
+}
+
+// QueryInventoryTransactions queries the "inventory_transactions" edge of the Entity entity.
+func (_m *Entity) QueryInventoryTransactions() *InventoryTransactionQuery {
+	return NewEntityClient(_m.config).QueryInventoryTransactions(_m)
+}
+
 // Update returns a builder for updating this Entity.
 // Note that you need to call Entity.Unwrap() before calling this method if this Entity
 // was returned from a transaction, and the transaction was committed or rolled back.
@@ -527,6 +575,12 @@ func (_m *Entity) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("quantity=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Quantity))
+	builder.WriteString(", ")
+	builder.WriteString("available_quantity=")
+	builder.WriteString(fmt.Sprintf("%v", _m.AvailableQuantity))
+	builder.WriteString(", ")
+	builder.WriteString("defective_quantity=")
+	builder.WriteString(fmt.Sprintf("%v", _m.DefectiveQuantity))
 	builder.WriteString(", ")
 	builder.WriteString("insured=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Insured))

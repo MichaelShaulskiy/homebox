@@ -193,9 +193,17 @@ definitions:
       asset_id:
         description: AssetID holds the value of the "asset_id" field.
         type: integer
+      available_quantity:
+        description: AvailableQuantity holds the value of the "available_quantity"
+          field.
+        type: number
       created_at:
         description: CreatedAt holds the value of the "created_at" field.
         type: string
+      defective_quantity:
+        description: DefectiveQuantity holds the value of the "defective_quantity"
+          field.
+        type: number
       description:
         description: Description holds the value of the "description" field.
         type: string
@@ -295,6 +303,18 @@ definitions:
         allOf:
         - $ref: '#/definitions/ent.Group'
         description: Group holds the value of the group edge.
+      inventory_assignments:
+        description: InventoryAssignments holds the value of the inventory_assignments
+          edge.
+        items:
+          $ref: '#/definitions/ent.InventoryAssignment'
+        type: array
+      inventory_transactions:
+        description: InventoryTransactions holds the value of the inventory_transactions
+          edge.
+        items:
+          $ref: '#/definitions/ent.InventoryTransaction'
+        type: array
       location:
         allOf:
         - $ref: '#/definitions/ent.Entity'
@@ -593,6 +613,24 @@ definitions:
         items:
           $ref: '#/definitions/ent.Export'
         type: array
+      inventory_assignments:
+        description: InventoryAssignments holds the value of the inventory_assignments
+          edge.
+        items:
+          $ref: '#/definitions/ent.InventoryAssignment'
+        type: array
+      inventory_recipients:
+        description: InventoryRecipients holds the value of the inventory_recipients
+          edge.
+        items:
+          $ref: '#/definitions/ent.InventoryRecipient'
+        type: array
+      inventory_transactions:
+        description: InventoryTransactions holds the value of the inventory_transactions
+          edge.
+        items:
+          $ref: '#/definitions/ent.InventoryTransaction'
+        type: array
       invitation_tokens:
         description: InvitationTokens holds the value of the invitation_tokens edge.
         items:
@@ -659,6 +697,195 @@ definitions:
         allOf:
         - $ref: '#/definitions/ent.Group'
         description: Group holds the value of the group edge.
+    type: object
+  ent.InventoryAssignment:
+    properties:
+      asset_tag:
+        description: AssetTag holds the value of the "asset_tag" field.
+        type: string
+      created_at:
+        description: CreatedAt holds the value of the "created_at" field.
+        type: string
+      edges:
+        allOf:
+        - $ref: '#/definitions/ent.InventoryAssignmentEdges'
+        description: |-
+          Edges holds the relations/edges for other nodes in the graph.
+          The values are being populated by the InventoryAssignmentQuery when eager-loading is set.
+      entity_id:
+        description: EntityID holds the value of the "entity_id" field.
+        type: string
+      group_id:
+        description: GroupID holds the value of the "group_id" field.
+        type: string
+      id:
+        description: ID of the ent.
+        type: string
+      issued_at:
+        description: IssuedAt holds the value of the "issued_at" field.
+        type: string
+      note:
+        description: Note holds the value of the "note" field.
+        type: string
+      quantity:
+        description: Quantity holds the value of the "quantity" field.
+        type: number
+      recipient_id:
+        description: RecipientID holds the value of the "recipient_id" field.
+        type: string
+      returned_at:
+        description: ReturnedAt holds the value of the "returned_at" field.
+        type: string
+      serial_number:
+        description: SerialNumber holds the value of the "serial_number" field.
+        type: string
+      updated_at:
+        description: UpdatedAt holds the value of the "updated_at" field.
+        type: string
+    type: object
+  ent.InventoryAssignmentEdges:
+    properties:
+      entity:
+        allOf:
+        - $ref: '#/definitions/ent.Entity'
+        description: Entity holds the value of the entity edge.
+      group:
+        allOf:
+        - $ref: '#/definitions/ent.Group'
+        description: Group holds the value of the group edge.
+      recipient:
+        allOf:
+        - $ref: '#/definitions/ent.InventoryRecipient'
+        description: Recipient holds the value of the recipient edge.
+    type: object
+  ent.InventoryRecipient:
+    properties:
+      created_at:
+        description: CreatedAt holds the value of the "created_at" field.
+        type: string
+      department:
+        description: Department holds the value of the "department" field.
+        type: string
+      edges:
+        allOf:
+        - $ref: '#/definitions/ent.InventoryRecipientEdges'
+        description: |-
+          Edges holds the relations/edges for other nodes in the graph.
+          The values are being populated by the InventoryRecipientQuery when eager-loading is set.
+      email:
+        description: Email holds the value of the "email" field.
+        type: string
+      first_name:
+        description: FirstName holds the value of the "first_name" field.
+        type: string
+      group_id:
+        description: GroupID holds the value of the "group_id" field.
+        type: string
+      id:
+        description: ID of the ent.
+        type: string
+      is_active:
+        description: IsActive holds the value of the "is_active" field.
+        type: boolean
+      last_name:
+        description: LastName holds the value of the "last_name" field.
+        type: string
+      updated_at:
+        description: UpdatedAt holds the value of the "updated_at" field.
+        type: string
+    type: object
+  ent.InventoryRecipientEdges:
+    properties:
+      assignments:
+        description: Assignments holds the value of the assignments edge.
+        items:
+          $ref: '#/definitions/ent.InventoryAssignment'
+        type: array
+      group:
+        allOf:
+        - $ref: '#/definitions/ent.Group'
+        description: Group holds the value of the group edge.
+      inventory_transactions:
+        description: InventoryTransactions holds the value of the inventory_transactions
+          edge.
+        items:
+          $ref: '#/definitions/ent.InventoryTransaction'
+        type: array
+    type: object
+  ent.InventoryTransaction:
+    properties:
+      action_type:
+        allOf:
+        - $ref: '#/definitions/inventorytransaction.ActionType'
+        description: ActionType holds the value of the "action_type" field.
+      asset_tag:
+        description: AssetTag holds the value of the "asset_tag" field.
+        type: string
+      created_at:
+        description: CreatedAt holds the value of the "created_at" field.
+        type: string
+      edges:
+        allOf:
+        - $ref: '#/definitions/ent.InventoryTransactionEdges'
+        description: |-
+          Edges holds the relations/edges for other nodes in the graph.
+          The values are being populated by the InventoryTransactionQuery when eager-loading is set.
+      group_id:
+        description: GroupID holds the value of the "group_id" field.
+        type: string
+      id:
+        description: ID of the ent.
+        type: string
+      item_id:
+        description: ItemID holds the value of the "item_id" field.
+        type: string
+      item_name:
+        description: ItemName holds the value of the "item_name" field.
+        type: string
+      performed_by_admin_id:
+        description: PerformedByAdminID holds the value of the "performed_by_admin_id"
+          field.
+        type: string
+      performed_by_admin_name:
+        description: PerformedByAdminName holds the value of the "performed_by_admin_name"
+          field.
+        type: string
+      quantity:
+        description: Quantity holds the value of the "quantity" field.
+        type: number
+      reason_or_note:
+        description: ReasonOrNote holds the value of the "reason_or_note" field.
+        type: string
+      serial_number:
+        description: SerialNumber holds the value of the "serial_number" field.
+        type: string
+      target_user_id:
+        description: TargetUserID holds the value of the "target_user_id" field.
+        type: string
+      target_user_name:
+        description: TargetUserName holds the value of the "target_user_name" field.
+        type: string
+      timestamp:
+        description: Timestamp holds the value of the "timestamp" field.
+        type: string
+      updated_at:
+        description: UpdatedAt holds the value of the "updated_at" field.
+        type: string
+    type: object
+  ent.InventoryTransactionEdges:
+    properties:
+      entity:
+        allOf:
+        - $ref: '#/definitions/ent.Entity'
+        description: Entity holds the value of the entity edge.
+      group:
+        allOf:
+        - $ref: '#/definitions/ent.Group'
+        description: Group holds the value of the group edge.
+      recipient:
+        allOf:
+        - $ref: '#/definitions/ent.InventoryRecipient'
+        description: Recipient holds the value of the recipient edge.
     type: object
   ent.LabelTemplate:
     properties:
@@ -1103,6 +1330,20 @@ definitions:
     - StatusRunning
     - StatusCompleted
     - StatusFailed
+  inventorytransaction.ActionType:
+    enum:
+    - ISSUED
+    - RETURNED_OK
+    - RETURNED_DEFECTIVE
+    - WRITTEN_OFF
+    - STOCK_ADDED
+    type: string
+    x-enum-varnames:
+    - ActionTypeISSUED
+    - ActionTypeRETURNED_OK
+    - ActionTypeRETURNED_DEFECTIVE
+    - ActionTypeWRITTEN_OFF
+    - ActionTypeSTOCK_ADDED
   labelmaker.BarcodeFormat:
     enum:
     - qr
@@ -1393,6 +1634,8 @@ definitions:
         items:
           $ref: '#/definitions/repo.ItemAttachment'
         type: array
+      availableQuantity:
+        type: number
       children:
         description: Container-specific fields (for entities whose entity_type.is_location
           = true)
@@ -1401,6 +1644,8 @@ definitions:
         type: array
       createdAt:
         type: string
+      defectiveQuantity:
+        type: number
       description:
         type: string
       entityType:
@@ -1547,8 +1792,12 @@ definitions:
       assetId:
         example: "0"
         type: string
+      availableQuantity:
+        type: number
       createdAt:
         type: string
+      defectiveQuantity:
+        type: number
       description:
         type: string
       entityType:
@@ -1991,6 +2240,191 @@ definitions:
       currency:
         type: string
       name:
+        type: string
+    type: object
+  repo.InventoryAssignmentOut:
+    properties:
+      assetTag:
+        type: string
+      id:
+        type: string
+      issuedAt:
+        type: string
+      itemId:
+        type: string
+      itemName:
+        type: string
+      note:
+        type: string
+      quantity:
+        type: number
+      recipientId:
+        type: string
+      recipientName:
+        type: string
+      returnedAt:
+        type: string
+      serialNumber:
+        type: string
+    type: object
+  repo.InventoryIssueInput:
+    properties:
+      assetTag:
+        maxLength: 255
+        type: string
+      itemId:
+        type: string
+      note:
+        maxLength: 2000
+        type: string
+      quantity:
+        type: number
+      recipientId:
+        type: string
+      serialNumber:
+        maxLength: 255
+        type: string
+    required:
+    - itemId
+    - quantity
+    - recipientId
+    type: object
+  repo.InventoryRecipientCreate:
+    properties:
+      department:
+        maxLength: 255
+        type: string
+      email:
+        maxLength: 255
+        type: string
+      firstName:
+        maxLength: 255
+        minLength: 1
+        type: string
+      isActive:
+        type: boolean
+      lastName:
+        maxLength: 255
+        minLength: 1
+        type: string
+    required:
+    - firstName
+    - lastName
+    type: object
+  repo.InventoryRecipientOut:
+    properties:
+      createdAt:
+        type: string
+      department:
+        type: string
+      email:
+        type: string
+      firstName:
+        type: string
+      id:
+        type: string
+      isActive:
+        type: boolean
+      lastName:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  repo.InventoryRecipientUpdate:
+    properties:
+      department:
+        maxLength: 255
+        type: string
+      email:
+        maxLength: 255
+        type: string
+      firstName:
+        maxLength: 255
+        minLength: 1
+        type: string
+      isActive:
+        type: boolean
+      lastName:
+        maxLength: 255
+        minLength: 1
+        type: string
+    required:
+    - firstName
+    - lastName
+    type: object
+  repo.InventoryReturnInput:
+    properties:
+      assignmentId:
+        type: string
+      quantity:
+        type: number
+      reasonOrNote:
+        maxLength: 2000
+        type: string
+      status:
+        enum:
+        - OK
+        - DEFECTIVE
+        - WRITTEN_OFF
+        type: string
+    required:
+    - assignmentId
+    - quantity
+    - status
+    type: object
+  repo.InventoryStockAddInput:
+    properties:
+      itemId:
+        type: string
+      quantity:
+        type: number
+      reasonOrNote:
+        maxLength: 2000
+        type: string
+    required:
+    - itemId
+    - quantity
+    type: object
+  repo.InventoryStockWriteOffInput:
+    properties:
+      itemId:
+        type: string
+      quantity:
+        type: number
+      reasonOrNote:
+        maxLength: 2000
+        type: string
+    required:
+    - itemId
+    - quantity
+    type: object
+  repo.InventoryTransactionOut:
+    properties:
+      actionType:
+        type: string
+      assetTag:
+        type: string
+      id:
+        type: string
+      itemId:
+        type: string
+      itemName:
+        type: string
+      performedByAdminId:
+        type: string
+      performedByAdminName:
+        type: string
+      quantity:
+        type: number
+      reasonOrNote:
+        type: string
+      serialNumber:
+        type: string
+      targetUserId:
+        type: string
+      targetUserName:
+        type: string
+      timestamp:
         type: string
     type: object
   repo.ItemAttachment:
@@ -4026,6 +4460,352 @@ paths:
       summary: Get Tags Statistics
       tags:
       - Statistics
+  /v1/inventory/assignments:
+    get:
+      parameters:
+      - description: item ID
+        in: query
+        name: itemId
+        type: string
+      - description: recipient ID
+        in: query
+        name: recipientId
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/repo.InventoryAssignmentOut'
+            type: array
+      security:
+      - Bearer: []
+      summary: Get active inventory assignments
+      tags:
+      - Inventory
+  /v1/inventory/assignments/{id}/return:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: assignment ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: return
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/repo.InventoryReturnInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/repo.InventoryAssignmentOut'
+      security:
+      - Bearer: []
+      summary: Return inventory
+      tags:
+      - Inventory
+  /v1/inventory/issue:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: issue
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/repo.InventoryIssueInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/repo.InventoryAssignmentOut'
+      security:
+      - Bearer: []
+      summary: Issue inventory
+      tags:
+      - Inventory
+  /v1/inventory/items/{id}/transactions:
+    get:
+      parameters:
+      - description: item ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/repo.InventoryTransactionOut'
+            type: array
+      security:
+      - Bearer: []
+      summary: Get item movement history
+      tags:
+      - Inventory
+  /v1/inventory/recipients:
+    get:
+      parameters:
+      - description: search
+        in: query
+        name: search
+        type: string
+      - description: active filter
+        in: query
+        name: active
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/repo.InventoryRecipientOut'
+            type: array
+      security:
+      - Bearer: []
+      summary: Get Inventory Recipients
+      tags:
+      - Inventory
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: recipient
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/repo.InventoryRecipientCreate'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/repo.InventoryRecipientOut'
+      security:
+      - Bearer: []
+      summary: Create Inventory Recipient
+      tags:
+      - Inventory
+  /v1/inventory/recipients/{id}:
+    get:
+      parameters:
+      - description: recipient ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/repo.InventoryRecipientOut'
+      security:
+      - Bearer: []
+      summary: Get Inventory Recipient
+      tags:
+      - Inventory
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: recipient ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: recipient
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/repo.InventoryRecipientUpdate'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/repo.InventoryRecipientOut'
+      security:
+      - Bearer: []
+      summary: Update Inventory Recipient
+      tags:
+      - Inventory
+  /v1/inventory/recipients/{id}/deactivate:
+    post:
+      parameters:
+      - description: recipient ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/repo.InventoryRecipientOut'
+      security:
+      - Bearer: []
+      summary: Deactivate Inventory Recipient
+      tags:
+      - Inventory
+  /v1/inventory/recipients/{id}/transactions:
+    get:
+      parameters:
+      - description: recipient ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/repo.InventoryTransactionOut'
+            type: array
+      security:
+      - Bearer: []
+      summary: Get recipient movement history
+      tags:
+      - Inventory
+  /v1/inventory/stock:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: stock
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/repo.InventoryStockAddInput'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+      security:
+      - Bearer: []
+      summary: Add inventory stock
+      tags:
+      - Inventory
+  /v1/inventory/transactions:
+    get:
+      parameters:
+      - description: search
+        in: query
+        name: search
+        type: string
+      - description: item ID
+        in: query
+        name: itemId
+        type: string
+      - description: recipient ID
+        in: query
+        name: recipientId
+        type: string
+      - description: admin ID
+        in: query
+        name: adminId
+        type: string
+      - collectionFormat: multi
+        description: action types
+        in: query
+        items:
+          type: string
+        name: actionTypes
+        type: array
+      - description: RFC3339 start
+        in: query
+        name: startTime
+        type: string
+      - description: RFC3339 end
+        in: query
+        name: endTime
+        type: string
+      - description: page
+        in: query
+        name: page
+        type: integer
+      - description: page size
+        in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/repo.InventoryTransactionOut'
+            type: array
+      security:
+      - Bearer: []
+      summary: Get inventory movement log
+      tags:
+      - Inventory
+  /v1/inventory/transactions/export:
+    get:
+      produces:
+      - text/csv
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      security:
+      - Bearer: []
+      summary: Export inventory movement log as CSV
+      tags:
+      - Inventory
+  /v1/inventory/write-off:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: write-off
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/repo.InventoryStockWriteOffInput'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+      security:
+      - Bearer: []
+      summary: Write off available inventory stock
+      tags:
+      - Inventory
   /v1/label-templates:
     get:
       produces:

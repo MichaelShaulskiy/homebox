@@ -41,6 +41,12 @@ const (
 	EdgeExports = "exports"
 	// EdgeLabelTemplates holds the string denoting the label_templates edge name in mutations.
 	EdgeLabelTemplates = "label_templates"
+	// EdgeInventoryRecipients holds the string denoting the inventory_recipients edge name in mutations.
+	EdgeInventoryRecipients = "inventory_recipients"
+	// EdgeInventoryAssignments holds the string denoting the inventory_assignments edge name in mutations.
+	EdgeInventoryAssignments = "inventory_assignments"
+	// EdgeInventoryTransactions holds the string denoting the inventory_transactions edge name in mutations.
+	EdgeInventoryTransactions = "inventory_transactions"
 	// EdgeUserGroups holds the string denoting the user_groups edge name in mutations.
 	EdgeUserGroups = "user_groups"
 	// Table holds the table name of the group in the database.
@@ -106,6 +112,27 @@ const (
 	LabelTemplatesInverseTable = "label_templates"
 	// LabelTemplatesColumn is the table column denoting the label_templates relation/edge.
 	LabelTemplatesColumn = "group_label_templates"
+	// InventoryRecipientsTable is the table that holds the inventory_recipients relation/edge.
+	InventoryRecipientsTable = "inventory_recipients"
+	// InventoryRecipientsInverseTable is the table name for the InventoryRecipient entity.
+	// It exists in this package in order to avoid circular dependency with the "inventoryrecipient" package.
+	InventoryRecipientsInverseTable = "inventory_recipients"
+	// InventoryRecipientsColumn is the table column denoting the inventory_recipients relation/edge.
+	InventoryRecipientsColumn = "group_id"
+	// InventoryAssignmentsTable is the table that holds the inventory_assignments relation/edge.
+	InventoryAssignmentsTable = "inventory_assignments"
+	// InventoryAssignmentsInverseTable is the table name for the InventoryAssignment entity.
+	// It exists in this package in order to avoid circular dependency with the "inventoryassignment" package.
+	InventoryAssignmentsInverseTable = "inventory_assignments"
+	// InventoryAssignmentsColumn is the table column denoting the inventory_assignments relation/edge.
+	InventoryAssignmentsColumn = "group_id"
+	// InventoryTransactionsTable is the table that holds the inventory_transactions relation/edge.
+	InventoryTransactionsTable = "inventory_transactions"
+	// InventoryTransactionsInverseTable is the table name for the InventoryTransaction entity.
+	// It exists in this package in order to avoid circular dependency with the "inventorytransaction" package.
+	InventoryTransactionsInverseTable = "inventory_transactions"
+	// InventoryTransactionsColumn is the table column denoting the inventory_transactions relation/edge.
+	InventoryTransactionsColumn = "group_id"
 	// UserGroupsTable is the table that holds the user_groups relation/edge.
 	UserGroupsTable = "user_groups"
 	// UserGroupsInverseTable is the table name for the UserGroup entity.
@@ -309,6 +336,48 @@ func ByLabelTemplates(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
+// ByInventoryRecipientsCount orders the results by inventory_recipients count.
+func ByInventoryRecipientsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newInventoryRecipientsStep(), opts...)
+	}
+}
+
+// ByInventoryRecipients orders the results by inventory_recipients terms.
+func ByInventoryRecipients(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newInventoryRecipientsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByInventoryAssignmentsCount orders the results by inventory_assignments count.
+func ByInventoryAssignmentsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newInventoryAssignmentsStep(), opts...)
+	}
+}
+
+// ByInventoryAssignments orders the results by inventory_assignments terms.
+func ByInventoryAssignments(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newInventoryAssignmentsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByInventoryTransactionsCount orders the results by inventory_transactions count.
+func ByInventoryTransactionsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newInventoryTransactionsStep(), opts...)
+	}
+}
+
+// ByInventoryTransactions orders the results by inventory_transactions terms.
+func ByInventoryTransactions(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newInventoryTransactionsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
 // ByUserGroupsCount orders the results by user_groups count.
 func ByUserGroupsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -383,6 +452,27 @@ func newLabelTemplatesStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(LabelTemplatesInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, LabelTemplatesTable, LabelTemplatesColumn),
+	)
+}
+func newInventoryRecipientsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(InventoryRecipientsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, InventoryRecipientsTable, InventoryRecipientsColumn),
+	)
+}
+func newInventoryAssignmentsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(InventoryAssignmentsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, InventoryAssignmentsTable, InventoryAssignmentsColumn),
+	)
+}
+func newInventoryTransactionsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(InventoryTransactionsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, InventoryTransactionsTable, InventoryTransactionsColumn),
 	)
 }
 func newUserGroupsStep() *sqlgraph.Step {

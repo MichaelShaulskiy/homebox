@@ -1789,6 +1789,569 @@
                 }
             }
         },
+        "/v1/inventory/assignments": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Inventory"
+                ],
+                "summary": "Get active inventory assignments",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "item ID",
+                        "name": "itemId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "recipient ID",
+                        "name": "recipientId",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/repo.InventoryAssignmentOut"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/inventory/assignments/{id}/return": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Inventory"
+                ],
+                "summary": "Return inventory",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "assignment ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "return",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/repo.InventoryReturnInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/repo.InventoryAssignmentOut"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/inventory/issue": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Inventory"
+                ],
+                "summary": "Issue inventory",
+                "parameters": [
+                    {
+                        "description": "issue",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/repo.InventoryIssueInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/repo.InventoryAssignmentOut"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/inventory/items/{id}/transactions": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Inventory"
+                ],
+                "summary": "Get item movement history",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "item ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/repo.InventoryTransactionOut"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/inventory/recipients": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Inventory"
+                ],
+                "summary": "Get Inventory Recipients",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "search",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "active filter",
+                        "name": "active",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/repo.InventoryRecipientOut"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Inventory"
+                ],
+                "summary": "Create Inventory Recipient",
+                "parameters": [
+                    {
+                        "description": "recipient",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/repo.InventoryRecipientCreate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/repo.InventoryRecipientOut"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/inventory/recipients/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Inventory"
+                ],
+                "summary": "Get Inventory Recipient",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "recipient ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/repo.InventoryRecipientOut"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Inventory"
+                ],
+                "summary": "Update Inventory Recipient",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "recipient ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "recipient",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/repo.InventoryRecipientUpdate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/repo.InventoryRecipientOut"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/inventory/recipients/{id}/deactivate": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Inventory"
+                ],
+                "summary": "Deactivate Inventory Recipient",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "recipient ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/repo.InventoryRecipientOut"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/inventory/recipients/{id}/transactions": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Inventory"
+                ],
+                "summary": "Get recipient movement history",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "recipient ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/repo.InventoryTransactionOut"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/inventory/stock": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Inventory"
+                ],
+                "summary": "Add inventory stock",
+                "parameters": [
+                    {
+                        "description": "stock",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/repo.InventoryStockAddInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            }
+        },
+        "/v1/inventory/transactions": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Inventory"
+                ],
+                "summary": "Get inventory movement log",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "search",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "item ID",
+                        "name": "itemId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "recipient ID",
+                        "name": "recipientId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "admin ID",
+                        "name": "adminId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "multi",
+                        "description": "action types",
+                        "name": "actionTypes",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "RFC3339 start",
+                        "name": "startTime",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "RFC3339 end",
+                        "name": "endTime",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "page",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "page size",
+                        "name": "pageSize",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/repo.InventoryTransactionOut"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/inventory/transactions/export": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "produces": [
+                    "text/csv"
+                ],
+                "tags": [
+                    "Inventory"
+                ],
+                "summary": "Export inventory movement log as CSV",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/inventory/write-off": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Inventory"
+                ],
+                "summary": "Write off available inventory stock",
+                "parameters": [
+                    {
+                        "description": "write-off",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/repo.InventoryStockWriteOffInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            }
+        },
         "/v1/label-templates": {
             "get": {
                 "security": [
@@ -4018,9 +4581,17 @@
                     "description": "AssetID holds the value of the \"asset_id\" field.",
                     "type": "integer"
                 },
+                "available_quantity": {
+                    "description": "AvailableQuantity holds the value of the \"available_quantity\" field.",
+                    "type": "number"
+                },
                 "created_at": {
                     "description": "CreatedAt holds the value of the \"created_at\" field.",
                     "type": "string"
+                },
+                "defective_quantity": {
+                    "description": "DefectiveQuantity holds the value of the \"defective_quantity\" field.",
+                    "type": "number"
                 },
                 "description": {
                     "description": "Description holds the value of the \"description\" field.",
@@ -4159,6 +4730,20 @@
                             "$ref": "#/definitions/ent.Group"
                         }
                     ]
+                },
+                "inventory_assignments": {
+                    "description": "InventoryAssignments holds the value of the inventory_assignments edge.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ent.InventoryAssignment"
+                    }
+                },
+                "inventory_transactions": {
+                    "description": "InventoryTransactions holds the value of the inventory_transactions edge.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ent.InventoryTransaction"
+                    }
                 },
                 "location": {
                     "description": "Location holds the value of the location edge.",
@@ -4592,6 +5177,27 @@
                         "$ref": "#/definitions/ent.Export"
                     }
                 },
+                "inventory_assignments": {
+                    "description": "InventoryAssignments holds the value of the inventory_assignments edge.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ent.InventoryAssignment"
+                    }
+                },
+                "inventory_recipients": {
+                    "description": "InventoryRecipients holds the value of the inventory_recipients edge.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ent.InventoryRecipient"
+                    }
+                },
+                "inventory_transactions": {
+                    "description": "InventoryTransactions holds the value of the inventory_transactions edge.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ent.InventoryTransaction"
+                    }
+                },
                 "invitation_tokens": {
                     "description": "InvitationTokens holds the value of the invitation_tokens edge.",
                     "type": "array",
@@ -4684,6 +5290,282 @@
                     "allOf": [
                         {
                             "$ref": "#/definitions/ent.Group"
+                        }
+                    ]
+                }
+            }
+        },
+        "ent.InventoryAssignment": {
+            "type": "object",
+            "properties": {
+                "asset_tag": {
+                    "description": "AssetTag holds the value of the \"asset_tag\" field.",
+                    "type": "string"
+                },
+                "created_at": {
+                    "description": "CreatedAt holds the value of the \"created_at\" field.",
+                    "type": "string"
+                },
+                "edges": {
+                    "description": "Edges holds the relations/edges for other nodes in the graph.\nThe values are being populated by the InventoryAssignmentQuery when eager-loading is set.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/ent.InventoryAssignmentEdges"
+                        }
+                    ]
+                },
+                "entity_id": {
+                    "description": "EntityID holds the value of the \"entity_id\" field.",
+                    "type": "string"
+                },
+                "group_id": {
+                    "description": "GroupID holds the value of the \"group_id\" field.",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "ID of the ent.",
+                    "type": "string"
+                },
+                "issued_at": {
+                    "description": "IssuedAt holds the value of the \"issued_at\" field.",
+                    "type": "string"
+                },
+                "note": {
+                    "description": "Note holds the value of the \"note\" field.",
+                    "type": "string"
+                },
+                "quantity": {
+                    "description": "Quantity holds the value of the \"quantity\" field.",
+                    "type": "number"
+                },
+                "recipient_id": {
+                    "description": "RecipientID holds the value of the \"recipient_id\" field.",
+                    "type": "string"
+                },
+                "returned_at": {
+                    "description": "ReturnedAt holds the value of the \"returned_at\" field.",
+                    "type": "string"
+                },
+                "serial_number": {
+                    "description": "SerialNumber holds the value of the \"serial_number\" field.",
+                    "type": "string"
+                },
+                "updated_at": {
+                    "description": "UpdatedAt holds the value of the \"updated_at\" field.",
+                    "type": "string"
+                }
+            }
+        },
+        "ent.InventoryAssignmentEdges": {
+            "type": "object",
+            "properties": {
+                "entity": {
+                    "description": "Entity holds the value of the entity edge.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/ent.Entity"
+                        }
+                    ]
+                },
+                "group": {
+                    "description": "Group holds the value of the group edge.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/ent.Group"
+                        }
+                    ]
+                },
+                "recipient": {
+                    "description": "Recipient holds the value of the recipient edge.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/ent.InventoryRecipient"
+                        }
+                    ]
+                }
+            }
+        },
+        "ent.InventoryRecipient": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "description": "CreatedAt holds the value of the \"created_at\" field.",
+                    "type": "string"
+                },
+                "department": {
+                    "description": "Department holds the value of the \"department\" field.",
+                    "type": "string"
+                },
+                "edges": {
+                    "description": "Edges holds the relations/edges for other nodes in the graph.\nThe values are being populated by the InventoryRecipientQuery when eager-loading is set.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/ent.InventoryRecipientEdges"
+                        }
+                    ]
+                },
+                "email": {
+                    "description": "Email holds the value of the \"email\" field.",
+                    "type": "string"
+                },
+                "first_name": {
+                    "description": "FirstName holds the value of the \"first_name\" field.",
+                    "type": "string"
+                },
+                "group_id": {
+                    "description": "GroupID holds the value of the \"group_id\" field.",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "ID of the ent.",
+                    "type": "string"
+                },
+                "is_active": {
+                    "description": "IsActive holds the value of the \"is_active\" field.",
+                    "type": "boolean"
+                },
+                "last_name": {
+                    "description": "LastName holds the value of the \"last_name\" field.",
+                    "type": "string"
+                },
+                "updated_at": {
+                    "description": "UpdatedAt holds the value of the \"updated_at\" field.",
+                    "type": "string"
+                }
+            }
+        },
+        "ent.InventoryRecipientEdges": {
+            "type": "object",
+            "properties": {
+                "assignments": {
+                    "description": "Assignments holds the value of the assignments edge.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ent.InventoryAssignment"
+                    }
+                },
+                "group": {
+                    "description": "Group holds the value of the group edge.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/ent.Group"
+                        }
+                    ]
+                },
+                "inventory_transactions": {
+                    "description": "InventoryTransactions holds the value of the inventory_transactions edge.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ent.InventoryTransaction"
+                    }
+                }
+            }
+        },
+        "ent.InventoryTransaction": {
+            "type": "object",
+            "properties": {
+                "action_type": {
+                    "description": "ActionType holds the value of the \"action_type\" field.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/inventorytransaction.ActionType"
+                        }
+                    ]
+                },
+                "asset_tag": {
+                    "description": "AssetTag holds the value of the \"asset_tag\" field.",
+                    "type": "string"
+                },
+                "created_at": {
+                    "description": "CreatedAt holds the value of the \"created_at\" field.",
+                    "type": "string"
+                },
+                "edges": {
+                    "description": "Edges holds the relations/edges for other nodes in the graph.\nThe values are being populated by the InventoryTransactionQuery when eager-loading is set.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/ent.InventoryTransactionEdges"
+                        }
+                    ]
+                },
+                "group_id": {
+                    "description": "GroupID holds the value of the \"group_id\" field.",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "ID of the ent.",
+                    "type": "string"
+                },
+                "item_id": {
+                    "description": "ItemID holds the value of the \"item_id\" field.",
+                    "type": "string"
+                },
+                "item_name": {
+                    "description": "ItemName holds the value of the \"item_name\" field.",
+                    "type": "string"
+                },
+                "performed_by_admin_id": {
+                    "description": "PerformedByAdminID holds the value of the \"performed_by_admin_id\" field.",
+                    "type": "string"
+                },
+                "performed_by_admin_name": {
+                    "description": "PerformedByAdminName holds the value of the \"performed_by_admin_name\" field.",
+                    "type": "string"
+                },
+                "quantity": {
+                    "description": "Quantity holds the value of the \"quantity\" field.",
+                    "type": "number"
+                },
+                "reason_or_note": {
+                    "description": "ReasonOrNote holds the value of the \"reason_or_note\" field.",
+                    "type": "string"
+                },
+                "serial_number": {
+                    "description": "SerialNumber holds the value of the \"serial_number\" field.",
+                    "type": "string"
+                },
+                "target_user_id": {
+                    "description": "TargetUserID holds the value of the \"target_user_id\" field.",
+                    "type": "string"
+                },
+                "target_user_name": {
+                    "description": "TargetUserName holds the value of the \"target_user_name\" field.",
+                    "type": "string"
+                },
+                "timestamp": {
+                    "description": "Timestamp holds the value of the \"timestamp\" field.",
+                    "type": "string"
+                },
+                "updated_at": {
+                    "description": "UpdatedAt holds the value of the \"updated_at\" field.",
+                    "type": "string"
+                }
+            }
+        },
+        "ent.InventoryTransactionEdges": {
+            "type": "object",
+            "properties": {
+                "entity": {
+                    "description": "Entity holds the value of the entity edge.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/ent.Entity"
+                        }
+                    ]
+                },
+                "group": {
+                    "description": "Group holds the value of the group edge.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/ent.Group"
+                        }
+                    ]
+                },
+                "recipient": {
+                    "description": "Recipient holds the value of the recipient edge.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/ent.InventoryRecipient"
                         }
                     ]
                 }
@@ -5330,6 +6212,23 @@
                 "StatusFailed"
             ]
         },
+        "inventorytransaction.ActionType": {
+            "type": "string",
+            "enum": [
+                "ISSUED",
+                "RETURNED_OK",
+                "RETURNED_DEFECTIVE",
+                "WRITTEN_OFF",
+                "STOCK_ADDED"
+            ],
+            "x-enum-varnames": [
+                "ActionTypeISSUED",
+                "ActionTypeRETURNED_OK",
+                "ActionTypeRETURNED_DEFECTIVE",
+                "ActionTypeWRITTEN_OFF",
+                "ActionTypeSTOCK_ADDED"
+            ]
+        },
         "labelmaker.BarcodeFormat": {
             "type": "string",
             "enum": [
@@ -5730,6 +6629,9 @@
                         "$ref": "#/definitions/repo.ItemAttachment"
                     }
                 },
+                "availableQuantity": {
+                    "type": "number"
+                },
                 "children": {
                     "description": "Container-specific fields (for entities whose entity_type.is_location = true)",
                     "type": "array",
@@ -5739,6 +6641,9 @@
                 },
                 "createdAt": {
                     "type": "string"
+                },
+                "defectiveQuantity": {
+                    "type": "number"
                 },
                 "description": {
                     "type": "string"
@@ -5944,8 +6849,14 @@
                     "type": "string",
                     "example": "0"
                 },
+                "availableQuantity": {
+                    "type": "number"
+                },
                 "createdAt": {
                     "type": "string"
+                },
+                "defectiveQuantity": {
+                    "type": "number"
                 },
                 "description": {
                     "type": "string"
@@ -6576,6 +7487,274 @@
                     "type": "string"
                 },
                 "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "repo.InventoryAssignmentOut": {
+            "type": "object",
+            "properties": {
+                "assetTag": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "issuedAt": {
+                    "type": "string"
+                },
+                "itemId": {
+                    "type": "string"
+                },
+                "itemName": {
+                    "type": "string"
+                },
+                "note": {
+                    "type": "string"
+                },
+                "quantity": {
+                    "type": "number"
+                },
+                "recipientId": {
+                    "type": "string"
+                },
+                "recipientName": {
+                    "type": "string"
+                },
+                "returnedAt": {
+                    "type": "string"
+                },
+                "serialNumber": {
+                    "type": "string"
+                }
+            }
+        },
+        "repo.InventoryIssueInput": {
+            "type": "object",
+            "required": [
+                "itemId",
+                "quantity",
+                "recipientId"
+            ],
+            "properties": {
+                "assetTag": {
+                    "type": "string",
+                    "maxLength": 255
+                },
+                "itemId": {
+                    "type": "string"
+                },
+                "note": {
+                    "type": "string",
+                    "maxLength": 2000
+                },
+                "quantity": {
+                    "type": "number"
+                },
+                "recipientId": {
+                    "type": "string"
+                },
+                "serialNumber": {
+                    "type": "string",
+                    "maxLength": 255
+                }
+            }
+        },
+        "repo.InventoryRecipientCreate": {
+            "type": "object",
+            "required": [
+                "firstName",
+                "lastName"
+            ],
+            "properties": {
+                "department": {
+                    "type": "string",
+                    "maxLength": 255
+                },
+                "email": {
+                    "type": "string",
+                    "maxLength": 255
+                },
+                "firstName": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 1
+                },
+                "isActive": {
+                    "type": "boolean"
+                },
+                "lastName": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 1
+                }
+            }
+        },
+        "repo.InventoryRecipientOut": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "department": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "firstName": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "isActive": {
+                    "type": "boolean"
+                },
+                "lastName": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "repo.InventoryRecipientUpdate": {
+            "type": "object",
+            "required": [
+                "firstName",
+                "lastName"
+            ],
+            "properties": {
+                "department": {
+                    "type": "string",
+                    "maxLength": 255
+                },
+                "email": {
+                    "type": "string",
+                    "maxLength": 255
+                },
+                "firstName": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 1
+                },
+                "isActive": {
+                    "type": "boolean"
+                },
+                "lastName": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 1
+                }
+            }
+        },
+        "repo.InventoryReturnInput": {
+            "type": "object",
+            "required": [
+                "assignmentId",
+                "quantity",
+                "status"
+            ],
+            "properties": {
+                "assignmentId": {
+                    "type": "string"
+                },
+                "quantity": {
+                    "type": "number"
+                },
+                "reasonOrNote": {
+                    "type": "string",
+                    "maxLength": 2000
+                },
+                "status": {
+                    "type": "string",
+                    "enum": [
+                        "OK",
+                        "DEFECTIVE",
+                        "WRITTEN_OFF"
+                    ]
+                }
+            }
+        },
+        "repo.InventoryStockAddInput": {
+            "type": "object",
+            "required": [
+                "itemId",
+                "quantity"
+            ],
+            "properties": {
+                "itemId": {
+                    "type": "string"
+                },
+                "quantity": {
+                    "type": "number"
+                },
+                "reasonOrNote": {
+                    "type": "string",
+                    "maxLength": 2000
+                }
+            }
+        },
+        "repo.InventoryStockWriteOffInput": {
+            "type": "object",
+            "required": [
+                "itemId",
+                "quantity"
+            ],
+            "properties": {
+                "itemId": {
+                    "type": "string"
+                },
+                "quantity": {
+                    "type": "number"
+                },
+                "reasonOrNote": {
+                    "type": "string",
+                    "maxLength": 2000
+                }
+            }
+        },
+        "repo.InventoryTransactionOut": {
+            "type": "object",
+            "properties": {
+                "actionType": {
+                    "type": "string"
+                },
+                "assetTag": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "itemId": {
+                    "type": "string"
+                },
+                "itemName": {
+                    "type": "string"
+                },
+                "performedByAdminId": {
+                    "type": "string"
+                },
+                "performedByAdminName": {
+                    "type": "string"
+                },
+                "quantity": {
+                    "type": "number"
+                },
+                "reasonOrNote": {
+                    "type": "string"
+                },
+                "serialNumber": {
+                    "type": "string"
+                },
+                "targetUserId": {
+                    "type": "string"
+                },
+                "targetUserName": {
+                    "type": "string"
+                },
+                "timestamp": {
                     "type": "string"
                 }
             }

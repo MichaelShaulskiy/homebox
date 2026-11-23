@@ -27,6 +27,9 @@ import (
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/export"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/group"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/groupinvitationtoken"
+	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/inventoryassignment"
+	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/inventoryrecipient"
+	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/inventorytransaction"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/labeltemplate"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/maintenanceentry"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/notifier"
@@ -64,6 +67,12 @@ type Client struct {
 	Group *GroupClient
 	// GroupInvitationToken is the client for interacting with the GroupInvitationToken builders.
 	GroupInvitationToken *GroupInvitationTokenClient
+	// InventoryAssignment is the client for interacting with the InventoryAssignment builders.
+	InventoryAssignment *InventoryAssignmentClient
+	// InventoryRecipient is the client for interacting with the InventoryRecipient builders.
+	InventoryRecipient *InventoryRecipientClient
+	// InventoryTransaction is the client for interacting with the InventoryTransaction builders.
+	InventoryTransaction *InventoryTransactionClient
 	// LabelTemplate is the client for interacting with the LabelTemplate builders.
 	LabelTemplate *LabelTemplateClient
 	// MaintenanceEntry is the client for interacting with the MaintenanceEntry builders.
@@ -102,6 +111,9 @@ func (c *Client) init() {
 	c.Export = NewExportClient(c.config)
 	c.Group = NewGroupClient(c.config)
 	c.GroupInvitationToken = NewGroupInvitationTokenClient(c.config)
+	c.InventoryAssignment = NewInventoryAssignmentClient(c.config)
+	c.InventoryRecipient = NewInventoryRecipientClient(c.config)
+	c.InventoryTransaction = NewInventoryTransactionClient(c.config)
 	c.LabelTemplate = NewLabelTemplateClient(c.config)
 	c.MaintenanceEntry = NewMaintenanceEntryClient(c.config)
 	c.Notifier = NewNotifierClient(c.config)
@@ -213,6 +225,9 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		Export:               NewExportClient(cfg),
 		Group:                NewGroupClient(cfg),
 		GroupInvitationToken: NewGroupInvitationTokenClient(cfg),
+		InventoryAssignment:  NewInventoryAssignmentClient(cfg),
+		InventoryRecipient:   NewInventoryRecipientClient(cfg),
+		InventoryTransaction: NewInventoryTransactionClient(cfg),
 		LabelTemplate:        NewLabelTemplateClient(cfg),
 		MaintenanceEntry:     NewMaintenanceEntryClient(cfg),
 		Notifier:             NewNotifierClient(cfg),
@@ -251,6 +266,9 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		Export:               NewExportClient(cfg),
 		Group:                NewGroupClient(cfg),
 		GroupInvitationToken: NewGroupInvitationTokenClient(cfg),
+		InventoryAssignment:  NewInventoryAssignmentClient(cfg),
+		InventoryRecipient:   NewInventoryRecipientClient(cfg),
+		InventoryTransaction: NewInventoryTransactionClient(cfg),
 		LabelTemplate:        NewLabelTemplateClient(cfg),
 		MaintenanceEntry:     NewMaintenanceEntryClient(cfg),
 		Notifier:             NewNotifierClient(cfg),
@@ -290,6 +308,7 @@ func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
 		c.APIKey, c.Attachment, c.AuthRoles, c.AuthTokens, c.Entity, c.EntityField,
 		c.EntityTemplate, c.EntityType, c.Export, c.Group, c.GroupInvitationToken,
+		c.InventoryAssignment, c.InventoryRecipient, c.InventoryTransaction,
 		c.LabelTemplate, c.MaintenanceEntry, c.Notifier, c.PasswordResetTokens, c.Tag,
 		c.TemplateField, c.User, c.UserGroup,
 	} {
@@ -303,6 +322,7 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
 		c.APIKey, c.Attachment, c.AuthRoles, c.AuthTokens, c.Entity, c.EntityField,
 		c.EntityTemplate, c.EntityType, c.Export, c.Group, c.GroupInvitationToken,
+		c.InventoryAssignment, c.InventoryRecipient, c.InventoryTransaction,
 		c.LabelTemplate, c.MaintenanceEntry, c.Notifier, c.PasswordResetTokens, c.Tag,
 		c.TemplateField, c.User, c.UserGroup,
 	} {
@@ -335,6 +355,12 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Group.mutate(ctx, m)
 	case *GroupInvitationTokenMutation:
 		return c.GroupInvitationToken.mutate(ctx, m)
+	case *InventoryAssignmentMutation:
+		return c.InventoryAssignment.mutate(ctx, m)
+	case *InventoryRecipientMutation:
+		return c.InventoryRecipient.mutate(ctx, m)
+	case *InventoryTransactionMutation:
+		return c.InventoryTransaction.mutate(ctx, m)
 	case *LabelTemplateMutation:
 		return c.LabelTemplate.mutate(ctx, m)
 	case *MaintenanceEntryMutation:
@@ -1245,6 +1271,38 @@ func (c *EntityClient) QueryAttachments(_m *Entity) *AttachmentQuery {
 			sqlgraph.From(entity.Table, entity.FieldID, id),
 			sqlgraph.To(attachment.Table, attachment.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, entity.AttachmentsTable, entity.AttachmentsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryInventoryAssignments queries the inventory_assignments edge of a Entity.
+func (c *EntityClient) QueryInventoryAssignments(_m *Entity) *InventoryAssignmentQuery {
+	query := (&InventoryAssignmentClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(entity.Table, entity.FieldID, id),
+			sqlgraph.To(inventoryassignment.Table, inventoryassignment.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, entity.InventoryAssignmentsTable, entity.InventoryAssignmentsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryInventoryTransactions queries the inventory_transactions edge of a Entity.
+func (c *EntityClient) QueryInventoryTransactions(_m *Entity) *InventoryTransactionQuery {
+	query := (&InventoryTransactionClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(entity.Table, entity.FieldID, id),
+			sqlgraph.To(inventorytransaction.Table, inventorytransaction.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, entity.InventoryTransactionsTable, entity.InventoryTransactionsColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -2189,6 +2247,54 @@ func (c *GroupClient) QueryLabelTemplates(_m *Group) *LabelTemplateQuery {
 	return query
 }
 
+// QueryInventoryRecipients queries the inventory_recipients edge of a Group.
+func (c *GroupClient) QueryInventoryRecipients(_m *Group) *InventoryRecipientQuery {
+	query := (&InventoryRecipientClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(group.Table, group.FieldID, id),
+			sqlgraph.To(inventoryrecipient.Table, inventoryrecipient.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, group.InventoryRecipientsTable, group.InventoryRecipientsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryInventoryAssignments queries the inventory_assignments edge of a Group.
+func (c *GroupClient) QueryInventoryAssignments(_m *Group) *InventoryAssignmentQuery {
+	query := (&InventoryAssignmentClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(group.Table, group.FieldID, id),
+			sqlgraph.To(inventoryassignment.Table, inventoryassignment.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, group.InventoryAssignmentsTable, group.InventoryAssignmentsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryInventoryTransactions queries the inventory_transactions edge of a Group.
+func (c *GroupClient) QueryInventoryTransactions(_m *Group) *InventoryTransactionQuery {
+	query := (&InventoryTransactionClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(group.Table, group.FieldID, id),
+			sqlgraph.To(inventorytransaction.Table, inventorytransaction.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, group.InventoryTransactionsTable, group.InventoryTransactionsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryUserGroups queries the user_groups edge of a Group.
 func (c *GroupClient) QueryUserGroups(_m *Group) *UserGroupQuery {
 	query := (&UserGroupClient{config: c.config}).Query()
@@ -2376,6 +2482,549 @@ func (c *GroupInvitationTokenClient) mutate(ctx context.Context, m *GroupInvitat
 		return (&GroupInvitationTokenDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown GroupInvitationToken mutation op: %q", m.Op())
+	}
+}
+
+// InventoryAssignmentClient is a client for the InventoryAssignment schema.
+type InventoryAssignmentClient struct {
+	config
+}
+
+// NewInventoryAssignmentClient returns a client for the InventoryAssignment from the given config.
+func NewInventoryAssignmentClient(c config) *InventoryAssignmentClient {
+	return &InventoryAssignmentClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `inventoryassignment.Hooks(f(g(h())))`.
+func (c *InventoryAssignmentClient) Use(hooks ...Hook) {
+	c.hooks.InventoryAssignment = append(c.hooks.InventoryAssignment, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `inventoryassignment.Intercept(f(g(h())))`.
+func (c *InventoryAssignmentClient) Intercept(interceptors ...Interceptor) {
+	c.inters.InventoryAssignment = append(c.inters.InventoryAssignment, interceptors...)
+}
+
+// Create returns a builder for creating a InventoryAssignment entity.
+func (c *InventoryAssignmentClient) Create() *InventoryAssignmentCreate {
+	mutation := newInventoryAssignmentMutation(c.config, OpCreate)
+	return &InventoryAssignmentCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of InventoryAssignment entities.
+func (c *InventoryAssignmentClient) CreateBulk(builders ...*InventoryAssignmentCreate) *InventoryAssignmentCreateBulk {
+	return &InventoryAssignmentCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *InventoryAssignmentClient) MapCreateBulk(slice any, setFunc func(*InventoryAssignmentCreate, int)) *InventoryAssignmentCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &InventoryAssignmentCreateBulk{err: fmt.Errorf("calling to InventoryAssignmentClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*InventoryAssignmentCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &InventoryAssignmentCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for InventoryAssignment.
+func (c *InventoryAssignmentClient) Update() *InventoryAssignmentUpdate {
+	mutation := newInventoryAssignmentMutation(c.config, OpUpdate)
+	return &InventoryAssignmentUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *InventoryAssignmentClient) UpdateOne(_m *InventoryAssignment) *InventoryAssignmentUpdateOne {
+	mutation := newInventoryAssignmentMutation(c.config, OpUpdateOne, withInventoryAssignment(_m))
+	return &InventoryAssignmentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *InventoryAssignmentClient) UpdateOneID(id uuid.UUID) *InventoryAssignmentUpdateOne {
+	mutation := newInventoryAssignmentMutation(c.config, OpUpdateOne, withInventoryAssignmentID(id))
+	return &InventoryAssignmentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for InventoryAssignment.
+func (c *InventoryAssignmentClient) Delete() *InventoryAssignmentDelete {
+	mutation := newInventoryAssignmentMutation(c.config, OpDelete)
+	return &InventoryAssignmentDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *InventoryAssignmentClient) DeleteOne(_m *InventoryAssignment) *InventoryAssignmentDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *InventoryAssignmentClient) DeleteOneID(id uuid.UUID) *InventoryAssignmentDeleteOne {
+	builder := c.Delete().Where(inventoryassignment.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &InventoryAssignmentDeleteOne{builder}
+}
+
+// Query returns a query builder for InventoryAssignment.
+func (c *InventoryAssignmentClient) Query() *InventoryAssignmentQuery {
+	return &InventoryAssignmentQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeInventoryAssignment},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a InventoryAssignment entity by its id.
+func (c *InventoryAssignmentClient) Get(ctx context.Context, id uuid.UUID) (*InventoryAssignment, error) {
+	return c.Query().Where(inventoryassignment.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *InventoryAssignmentClient) GetX(ctx context.Context, id uuid.UUID) *InventoryAssignment {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryGroup queries the group edge of a InventoryAssignment.
+func (c *InventoryAssignmentClient) QueryGroup(_m *InventoryAssignment) *GroupQuery {
+	query := (&GroupClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(inventoryassignment.Table, inventoryassignment.FieldID, id),
+			sqlgraph.To(group.Table, group.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, inventoryassignment.GroupTable, inventoryassignment.GroupColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryEntity queries the entity edge of a InventoryAssignment.
+func (c *InventoryAssignmentClient) QueryEntity(_m *InventoryAssignment) *EntityQuery {
+	query := (&EntityClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(inventoryassignment.Table, inventoryassignment.FieldID, id),
+			sqlgraph.To(entity.Table, entity.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, inventoryassignment.EntityTable, inventoryassignment.EntityColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryRecipient queries the recipient edge of a InventoryAssignment.
+func (c *InventoryAssignmentClient) QueryRecipient(_m *InventoryAssignment) *InventoryRecipientQuery {
+	query := (&InventoryRecipientClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(inventoryassignment.Table, inventoryassignment.FieldID, id),
+			sqlgraph.To(inventoryrecipient.Table, inventoryrecipient.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, inventoryassignment.RecipientTable, inventoryassignment.RecipientColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *InventoryAssignmentClient) Hooks() []Hook {
+	return c.hooks.InventoryAssignment
+}
+
+// Interceptors returns the client interceptors.
+func (c *InventoryAssignmentClient) Interceptors() []Interceptor {
+	return c.inters.InventoryAssignment
+}
+
+func (c *InventoryAssignmentClient) mutate(ctx context.Context, m *InventoryAssignmentMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&InventoryAssignmentCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&InventoryAssignmentUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&InventoryAssignmentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&InventoryAssignmentDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown InventoryAssignment mutation op: %q", m.Op())
+	}
+}
+
+// InventoryRecipientClient is a client for the InventoryRecipient schema.
+type InventoryRecipientClient struct {
+	config
+}
+
+// NewInventoryRecipientClient returns a client for the InventoryRecipient from the given config.
+func NewInventoryRecipientClient(c config) *InventoryRecipientClient {
+	return &InventoryRecipientClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `inventoryrecipient.Hooks(f(g(h())))`.
+func (c *InventoryRecipientClient) Use(hooks ...Hook) {
+	c.hooks.InventoryRecipient = append(c.hooks.InventoryRecipient, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `inventoryrecipient.Intercept(f(g(h())))`.
+func (c *InventoryRecipientClient) Intercept(interceptors ...Interceptor) {
+	c.inters.InventoryRecipient = append(c.inters.InventoryRecipient, interceptors...)
+}
+
+// Create returns a builder for creating a InventoryRecipient entity.
+func (c *InventoryRecipientClient) Create() *InventoryRecipientCreate {
+	mutation := newInventoryRecipientMutation(c.config, OpCreate)
+	return &InventoryRecipientCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of InventoryRecipient entities.
+func (c *InventoryRecipientClient) CreateBulk(builders ...*InventoryRecipientCreate) *InventoryRecipientCreateBulk {
+	return &InventoryRecipientCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *InventoryRecipientClient) MapCreateBulk(slice any, setFunc func(*InventoryRecipientCreate, int)) *InventoryRecipientCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &InventoryRecipientCreateBulk{err: fmt.Errorf("calling to InventoryRecipientClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*InventoryRecipientCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &InventoryRecipientCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for InventoryRecipient.
+func (c *InventoryRecipientClient) Update() *InventoryRecipientUpdate {
+	mutation := newInventoryRecipientMutation(c.config, OpUpdate)
+	return &InventoryRecipientUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *InventoryRecipientClient) UpdateOne(_m *InventoryRecipient) *InventoryRecipientUpdateOne {
+	mutation := newInventoryRecipientMutation(c.config, OpUpdateOne, withInventoryRecipient(_m))
+	return &InventoryRecipientUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *InventoryRecipientClient) UpdateOneID(id uuid.UUID) *InventoryRecipientUpdateOne {
+	mutation := newInventoryRecipientMutation(c.config, OpUpdateOne, withInventoryRecipientID(id))
+	return &InventoryRecipientUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for InventoryRecipient.
+func (c *InventoryRecipientClient) Delete() *InventoryRecipientDelete {
+	mutation := newInventoryRecipientMutation(c.config, OpDelete)
+	return &InventoryRecipientDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *InventoryRecipientClient) DeleteOne(_m *InventoryRecipient) *InventoryRecipientDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *InventoryRecipientClient) DeleteOneID(id uuid.UUID) *InventoryRecipientDeleteOne {
+	builder := c.Delete().Where(inventoryrecipient.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &InventoryRecipientDeleteOne{builder}
+}
+
+// Query returns a query builder for InventoryRecipient.
+func (c *InventoryRecipientClient) Query() *InventoryRecipientQuery {
+	return &InventoryRecipientQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeInventoryRecipient},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a InventoryRecipient entity by its id.
+func (c *InventoryRecipientClient) Get(ctx context.Context, id uuid.UUID) (*InventoryRecipient, error) {
+	return c.Query().Where(inventoryrecipient.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *InventoryRecipientClient) GetX(ctx context.Context, id uuid.UUID) *InventoryRecipient {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryGroup queries the group edge of a InventoryRecipient.
+func (c *InventoryRecipientClient) QueryGroup(_m *InventoryRecipient) *GroupQuery {
+	query := (&GroupClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(inventoryrecipient.Table, inventoryrecipient.FieldID, id),
+			sqlgraph.To(group.Table, group.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, inventoryrecipient.GroupTable, inventoryrecipient.GroupColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAssignments queries the assignments edge of a InventoryRecipient.
+func (c *InventoryRecipientClient) QueryAssignments(_m *InventoryRecipient) *InventoryAssignmentQuery {
+	query := (&InventoryAssignmentClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(inventoryrecipient.Table, inventoryrecipient.FieldID, id),
+			sqlgraph.To(inventoryassignment.Table, inventoryassignment.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, inventoryrecipient.AssignmentsTable, inventoryrecipient.AssignmentsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryInventoryTransactions queries the inventory_transactions edge of a InventoryRecipient.
+func (c *InventoryRecipientClient) QueryInventoryTransactions(_m *InventoryRecipient) *InventoryTransactionQuery {
+	query := (&InventoryTransactionClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(inventoryrecipient.Table, inventoryrecipient.FieldID, id),
+			sqlgraph.To(inventorytransaction.Table, inventorytransaction.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, inventoryrecipient.InventoryTransactionsTable, inventoryrecipient.InventoryTransactionsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *InventoryRecipientClient) Hooks() []Hook {
+	return c.hooks.InventoryRecipient
+}
+
+// Interceptors returns the client interceptors.
+func (c *InventoryRecipientClient) Interceptors() []Interceptor {
+	return c.inters.InventoryRecipient
+}
+
+func (c *InventoryRecipientClient) mutate(ctx context.Context, m *InventoryRecipientMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&InventoryRecipientCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&InventoryRecipientUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&InventoryRecipientUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&InventoryRecipientDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown InventoryRecipient mutation op: %q", m.Op())
+	}
+}
+
+// InventoryTransactionClient is a client for the InventoryTransaction schema.
+type InventoryTransactionClient struct {
+	config
+}
+
+// NewInventoryTransactionClient returns a client for the InventoryTransaction from the given config.
+func NewInventoryTransactionClient(c config) *InventoryTransactionClient {
+	return &InventoryTransactionClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `inventorytransaction.Hooks(f(g(h())))`.
+func (c *InventoryTransactionClient) Use(hooks ...Hook) {
+	c.hooks.InventoryTransaction = append(c.hooks.InventoryTransaction, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `inventorytransaction.Intercept(f(g(h())))`.
+func (c *InventoryTransactionClient) Intercept(interceptors ...Interceptor) {
+	c.inters.InventoryTransaction = append(c.inters.InventoryTransaction, interceptors...)
+}
+
+// Create returns a builder for creating a InventoryTransaction entity.
+func (c *InventoryTransactionClient) Create() *InventoryTransactionCreate {
+	mutation := newInventoryTransactionMutation(c.config, OpCreate)
+	return &InventoryTransactionCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of InventoryTransaction entities.
+func (c *InventoryTransactionClient) CreateBulk(builders ...*InventoryTransactionCreate) *InventoryTransactionCreateBulk {
+	return &InventoryTransactionCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *InventoryTransactionClient) MapCreateBulk(slice any, setFunc func(*InventoryTransactionCreate, int)) *InventoryTransactionCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &InventoryTransactionCreateBulk{err: fmt.Errorf("calling to InventoryTransactionClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*InventoryTransactionCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &InventoryTransactionCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for InventoryTransaction.
+func (c *InventoryTransactionClient) Update() *InventoryTransactionUpdate {
+	mutation := newInventoryTransactionMutation(c.config, OpUpdate)
+	return &InventoryTransactionUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *InventoryTransactionClient) UpdateOne(_m *InventoryTransaction) *InventoryTransactionUpdateOne {
+	mutation := newInventoryTransactionMutation(c.config, OpUpdateOne, withInventoryTransaction(_m))
+	return &InventoryTransactionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *InventoryTransactionClient) UpdateOneID(id uuid.UUID) *InventoryTransactionUpdateOne {
+	mutation := newInventoryTransactionMutation(c.config, OpUpdateOne, withInventoryTransactionID(id))
+	return &InventoryTransactionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for InventoryTransaction.
+func (c *InventoryTransactionClient) Delete() *InventoryTransactionDelete {
+	mutation := newInventoryTransactionMutation(c.config, OpDelete)
+	return &InventoryTransactionDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *InventoryTransactionClient) DeleteOne(_m *InventoryTransaction) *InventoryTransactionDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *InventoryTransactionClient) DeleteOneID(id uuid.UUID) *InventoryTransactionDeleteOne {
+	builder := c.Delete().Where(inventorytransaction.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &InventoryTransactionDeleteOne{builder}
+}
+
+// Query returns a query builder for InventoryTransaction.
+func (c *InventoryTransactionClient) Query() *InventoryTransactionQuery {
+	return &InventoryTransactionQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeInventoryTransaction},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a InventoryTransaction entity by its id.
+func (c *InventoryTransactionClient) Get(ctx context.Context, id uuid.UUID) (*InventoryTransaction, error) {
+	return c.Query().Where(inventorytransaction.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *InventoryTransactionClient) GetX(ctx context.Context, id uuid.UUID) *InventoryTransaction {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryGroup queries the group edge of a InventoryTransaction.
+func (c *InventoryTransactionClient) QueryGroup(_m *InventoryTransaction) *GroupQuery {
+	query := (&GroupClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(inventorytransaction.Table, inventorytransaction.FieldID, id),
+			sqlgraph.To(group.Table, group.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, inventorytransaction.GroupTable, inventorytransaction.GroupColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryEntity queries the entity edge of a InventoryTransaction.
+func (c *InventoryTransactionClient) QueryEntity(_m *InventoryTransaction) *EntityQuery {
+	query := (&EntityClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(inventorytransaction.Table, inventorytransaction.FieldID, id),
+			sqlgraph.To(entity.Table, entity.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, inventorytransaction.EntityTable, inventorytransaction.EntityColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryRecipient queries the recipient edge of a InventoryTransaction.
+func (c *InventoryTransactionClient) QueryRecipient(_m *InventoryTransaction) *InventoryRecipientQuery {
+	query := (&InventoryRecipientClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(inventorytransaction.Table, inventorytransaction.FieldID, id),
+			sqlgraph.To(inventoryrecipient.Table, inventoryrecipient.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, inventorytransaction.RecipientTable, inventorytransaction.RecipientColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *InventoryTransactionClient) Hooks() []Hook {
+	return c.hooks.InventoryTransaction
+}
+
+// Interceptors returns the client interceptors.
+func (c *InventoryTransactionClient) Interceptors() []Interceptor {
+	return c.inters.InventoryTransaction
+}
+
+func (c *InventoryTransactionClient) mutate(ctx context.Context, m *InventoryTransactionMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&InventoryTransactionCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&InventoryTransactionUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&InventoryTransactionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&InventoryTransactionDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown InventoryTransaction mutation op: %q", m.Op())
 	}
 }
 
@@ -3718,14 +4367,15 @@ func (c *UserGroupClient) mutate(ctx context.Context, m *UserGroupMutation) (Val
 type (
 	hooks struct {
 		APIKey, Attachment, AuthRoles, AuthTokens, Entity, EntityField, EntityTemplate,
-		EntityType, Export, Group, GroupInvitationToken, LabelTemplate,
-		MaintenanceEntry, Notifier, PasswordResetTokens, Tag, TemplateField, User,
-		UserGroup []ent.Hook
+		EntityType, Export, Group, GroupInvitationToken, InventoryAssignment,
+		InventoryRecipient, InventoryTransaction, LabelTemplate, MaintenanceEntry,
+		Notifier, PasswordResetTokens, Tag, TemplateField, User, UserGroup []ent.Hook
 	}
 	inters struct {
 		APIKey, Attachment, AuthRoles, AuthTokens, Entity, EntityField, EntityTemplate,
-		EntityType, Export, Group, GroupInvitationToken, LabelTemplate,
-		MaintenanceEntry, Notifier, PasswordResetTokens, Tag, TemplateField, User,
+		EntityType, Export, Group, GroupInvitationToken, InventoryAssignment,
+		InventoryRecipient, InventoryTransaction, LabelTemplate, MaintenanceEntry,
+		Notifier, PasswordResetTokens, Tag, TemplateField, User,
 		UserGroup []ent.Interceptor
 	}
 )

@@ -29,6 +29,10 @@ const (
 	FieldNotes = "notes"
 	// FieldQuantity holds the string denoting the quantity field in the database.
 	FieldQuantity = "quantity"
+	// FieldAvailableQuantity holds the string denoting the available_quantity field in the database.
+	FieldAvailableQuantity = "available_quantity"
+	// FieldDefectiveQuantity holds the string denoting the defective_quantity field in the database.
+	FieldDefectiveQuantity = "defective_quantity"
 	// FieldInsured holds the string denoting the insured field in the database.
 	FieldInsured = "insured"
 	// FieldArchived holds the string denoting the archived field in the database.
@@ -83,6 +87,10 @@ const (
 	EdgeMaintenanceEntries = "maintenance_entries"
 	// EdgeAttachments holds the string denoting the attachments edge name in mutations.
 	EdgeAttachments = "attachments"
+	// EdgeInventoryAssignments holds the string denoting the inventory_assignments edge name in mutations.
+	EdgeInventoryAssignments = "inventory_assignments"
+	// EdgeInventoryTransactions holds the string denoting the inventory_transactions edge name in mutations.
+	EdgeInventoryTransactions = "inventory_transactions"
 	// Table holds the table name of the entity in the database.
 	Table = "entities"
 	// GroupTable is the table that holds the group relation/edge.
@@ -141,6 +149,20 @@ const (
 	AttachmentsInverseTable = "attachments"
 	// AttachmentsColumn is the table column denoting the attachments relation/edge.
 	AttachmentsColumn = "entity_attachments"
+	// InventoryAssignmentsTable is the table that holds the inventory_assignments relation/edge.
+	InventoryAssignmentsTable = "inventory_assignments"
+	// InventoryAssignmentsInverseTable is the table name for the InventoryAssignment entity.
+	// It exists in this package in order to avoid circular dependency with the "inventoryassignment" package.
+	InventoryAssignmentsInverseTable = "inventory_assignments"
+	// InventoryAssignmentsColumn is the table column denoting the inventory_assignments relation/edge.
+	InventoryAssignmentsColumn = "entity_id"
+	// InventoryTransactionsTable is the table that holds the inventory_transactions relation/edge.
+	InventoryTransactionsTable = "inventory_transactions"
+	// InventoryTransactionsInverseTable is the table name for the InventoryTransaction entity.
+	// It exists in this package in order to avoid circular dependency with the "inventorytransaction" package.
+	InventoryTransactionsInverseTable = "inventory_transactions"
+	// InventoryTransactionsColumn is the table column denoting the inventory_transactions relation/edge.
+	InventoryTransactionsColumn = "item_id"
 )
 
 // Columns holds all SQL columns for entity fields.
@@ -153,6 +175,8 @@ var Columns = []string{
 	FieldImportRef,
 	FieldNotes,
 	FieldQuantity,
+	FieldAvailableQuantity,
+	FieldDefectiveQuantity,
 	FieldInsured,
 	FieldArchived,
 	FieldAssetID,
@@ -219,6 +243,10 @@ var (
 	NotesValidator func(string) error
 	// DefaultQuantity holds the default value on creation for the "quantity" field.
 	DefaultQuantity float64
+	// DefaultAvailableQuantity holds the default value on creation for the "available_quantity" field.
+	DefaultAvailableQuantity float64
+	// DefaultDefectiveQuantity holds the default value on creation for the "defective_quantity" field.
+	DefaultDefectiveQuantity float64
 	// DefaultInsured holds the default value on creation for the "insured" field.
 	DefaultInsured bool
 	// DefaultArchived holds the default value on creation for the "archived" field.
@@ -288,6 +316,16 @@ func ByNotes(opts ...sql.OrderTermOption) OrderOption {
 // ByQuantity orders the results by the quantity field.
 func ByQuantity(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldQuantity, opts...).ToFunc()
+}
+
+// ByAvailableQuantity orders the results by the available_quantity field.
+func ByAvailableQuantity(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAvailableQuantity, opts...).ToFunc()
+}
+
+// ByDefectiveQuantity orders the results by the defective_quantity field.
+func ByDefectiveQuantity(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldDefectiveQuantity, opts...).ToFunc()
 }
 
 // ByInsured orders the results by the insured field.
@@ -486,6 +524,34 @@ func ByAttachments(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newAttachmentsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByInventoryAssignmentsCount orders the results by inventory_assignments count.
+func ByInventoryAssignmentsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newInventoryAssignmentsStep(), opts...)
+	}
+}
+
+// ByInventoryAssignments orders the results by inventory_assignments terms.
+func ByInventoryAssignments(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newInventoryAssignmentsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByInventoryTransactionsCount orders the results by inventory_transactions count.
+func ByInventoryTransactionsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newInventoryTransactionsStep(), opts...)
+	}
+}
+
+// ByInventoryTransactions orders the results by inventory_transactions terms.
+func ByInventoryTransactions(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newInventoryTransactionsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newGroupStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -554,5 +620,19 @@ func newAttachmentsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(AttachmentsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, AttachmentsTable, AttachmentsColumn),
+	)
+}
+func newInventoryAssignmentsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(InventoryAssignmentsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, InventoryAssignmentsTable, InventoryAssignmentsColumn),
+	)
+}
+func newInventoryTransactionsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(InventoryTransactionsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, InventoryTransactionsTable, InventoryTransactionsColumn),
 	)
 }

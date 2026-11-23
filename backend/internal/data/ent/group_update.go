@@ -18,6 +18,9 @@ import (
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/export"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/group"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/groupinvitationtoken"
+	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/inventoryassignment"
+	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/inventoryrecipient"
+	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/inventorytransaction"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/labeltemplate"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/notifier"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/predicate"
@@ -205,6 +208,51 @@ func (_u *GroupUpdate) AddLabelTemplates(v ...*LabelTemplate) *GroupUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.AddLabelTemplateIDs(ids...)
+}
+
+// AddInventoryRecipientIDs adds the "inventory_recipients" edge to the InventoryRecipient entity by IDs.
+func (_u *GroupUpdate) AddInventoryRecipientIDs(ids ...uuid.UUID) *GroupUpdate {
+	_u.mutation.AddInventoryRecipientIDs(ids...)
+	return _u
+}
+
+// AddInventoryRecipients adds the "inventory_recipients" edges to the InventoryRecipient entity.
+func (_u *GroupUpdate) AddInventoryRecipients(v ...*InventoryRecipient) *GroupUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddInventoryRecipientIDs(ids...)
+}
+
+// AddInventoryAssignmentIDs adds the "inventory_assignments" edge to the InventoryAssignment entity by IDs.
+func (_u *GroupUpdate) AddInventoryAssignmentIDs(ids ...uuid.UUID) *GroupUpdate {
+	_u.mutation.AddInventoryAssignmentIDs(ids...)
+	return _u
+}
+
+// AddInventoryAssignments adds the "inventory_assignments" edges to the InventoryAssignment entity.
+func (_u *GroupUpdate) AddInventoryAssignments(v ...*InventoryAssignment) *GroupUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddInventoryAssignmentIDs(ids...)
+}
+
+// AddInventoryTransactionIDs adds the "inventory_transactions" edge to the InventoryTransaction entity by IDs.
+func (_u *GroupUpdate) AddInventoryTransactionIDs(ids ...uuid.UUID) *GroupUpdate {
+	_u.mutation.AddInventoryTransactionIDs(ids...)
+	return _u
+}
+
+// AddInventoryTransactions adds the "inventory_transactions" edges to the InventoryTransaction entity.
+func (_u *GroupUpdate) AddInventoryTransactions(v ...*InventoryTransaction) *GroupUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddInventoryTransactionIDs(ids...)
 }
 
 // Mutation returns the GroupMutation object of the builder.
@@ -399,6 +447,69 @@ func (_u *GroupUpdate) RemoveLabelTemplates(v ...*LabelTemplate) *GroupUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveLabelTemplateIDs(ids...)
+}
+
+// ClearInventoryRecipients clears all "inventory_recipients" edges to the InventoryRecipient entity.
+func (_u *GroupUpdate) ClearInventoryRecipients() *GroupUpdate {
+	_u.mutation.ClearInventoryRecipients()
+	return _u
+}
+
+// RemoveInventoryRecipientIDs removes the "inventory_recipients" edge to InventoryRecipient entities by IDs.
+func (_u *GroupUpdate) RemoveInventoryRecipientIDs(ids ...uuid.UUID) *GroupUpdate {
+	_u.mutation.RemoveInventoryRecipientIDs(ids...)
+	return _u
+}
+
+// RemoveInventoryRecipients removes "inventory_recipients" edges to InventoryRecipient entities.
+func (_u *GroupUpdate) RemoveInventoryRecipients(v ...*InventoryRecipient) *GroupUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveInventoryRecipientIDs(ids...)
+}
+
+// ClearInventoryAssignments clears all "inventory_assignments" edges to the InventoryAssignment entity.
+func (_u *GroupUpdate) ClearInventoryAssignments() *GroupUpdate {
+	_u.mutation.ClearInventoryAssignments()
+	return _u
+}
+
+// RemoveInventoryAssignmentIDs removes the "inventory_assignments" edge to InventoryAssignment entities by IDs.
+func (_u *GroupUpdate) RemoveInventoryAssignmentIDs(ids ...uuid.UUID) *GroupUpdate {
+	_u.mutation.RemoveInventoryAssignmentIDs(ids...)
+	return _u
+}
+
+// RemoveInventoryAssignments removes "inventory_assignments" edges to InventoryAssignment entities.
+func (_u *GroupUpdate) RemoveInventoryAssignments(v ...*InventoryAssignment) *GroupUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveInventoryAssignmentIDs(ids...)
+}
+
+// ClearInventoryTransactions clears all "inventory_transactions" edges to the InventoryTransaction entity.
+func (_u *GroupUpdate) ClearInventoryTransactions() *GroupUpdate {
+	_u.mutation.ClearInventoryTransactions()
+	return _u
+}
+
+// RemoveInventoryTransactionIDs removes the "inventory_transactions" edge to InventoryTransaction entities by IDs.
+func (_u *GroupUpdate) RemoveInventoryTransactionIDs(ids ...uuid.UUID) *GroupUpdate {
+	_u.mutation.RemoveInventoryTransactionIDs(ids...)
+	return _u
+}
+
+// RemoveInventoryTransactions removes "inventory_transactions" edges to InventoryTransaction entities.
+func (_u *GroupUpdate) RemoveInventoryTransactions(v ...*InventoryTransaction) *GroupUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveInventoryTransactionIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -885,6 +996,141 @@ func (_u *GroupUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.InventoryRecipientsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   group.InventoryRecipientsTable,
+			Columns: []string{group.InventoryRecipientsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(inventoryrecipient.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedInventoryRecipientsIDs(); len(nodes) > 0 && !_u.mutation.InventoryRecipientsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   group.InventoryRecipientsTable,
+			Columns: []string{group.InventoryRecipientsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(inventoryrecipient.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.InventoryRecipientsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   group.InventoryRecipientsTable,
+			Columns: []string{group.InventoryRecipientsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(inventoryrecipient.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.InventoryAssignmentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   group.InventoryAssignmentsTable,
+			Columns: []string{group.InventoryAssignmentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(inventoryassignment.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedInventoryAssignmentsIDs(); len(nodes) > 0 && !_u.mutation.InventoryAssignmentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   group.InventoryAssignmentsTable,
+			Columns: []string{group.InventoryAssignmentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(inventoryassignment.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.InventoryAssignmentsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   group.InventoryAssignmentsTable,
+			Columns: []string{group.InventoryAssignmentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(inventoryassignment.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.InventoryTransactionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   group.InventoryTransactionsTable,
+			Columns: []string{group.InventoryTransactionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(inventorytransaction.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedInventoryTransactionsIDs(); len(nodes) > 0 && !_u.mutation.InventoryTransactionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   group.InventoryTransactionsTable,
+			Columns: []string{group.InventoryTransactionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(inventorytransaction.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.InventoryTransactionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   group.InventoryTransactionsTable,
+			Columns: []string{group.InventoryTransactionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(inventorytransaction.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{group.Label}
@@ -1072,6 +1318,51 @@ func (_u *GroupUpdateOne) AddLabelTemplates(v ...*LabelTemplate) *GroupUpdateOne
 		ids[i] = v[i].ID
 	}
 	return _u.AddLabelTemplateIDs(ids...)
+}
+
+// AddInventoryRecipientIDs adds the "inventory_recipients" edge to the InventoryRecipient entity by IDs.
+func (_u *GroupUpdateOne) AddInventoryRecipientIDs(ids ...uuid.UUID) *GroupUpdateOne {
+	_u.mutation.AddInventoryRecipientIDs(ids...)
+	return _u
+}
+
+// AddInventoryRecipients adds the "inventory_recipients" edges to the InventoryRecipient entity.
+func (_u *GroupUpdateOne) AddInventoryRecipients(v ...*InventoryRecipient) *GroupUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddInventoryRecipientIDs(ids...)
+}
+
+// AddInventoryAssignmentIDs adds the "inventory_assignments" edge to the InventoryAssignment entity by IDs.
+func (_u *GroupUpdateOne) AddInventoryAssignmentIDs(ids ...uuid.UUID) *GroupUpdateOne {
+	_u.mutation.AddInventoryAssignmentIDs(ids...)
+	return _u
+}
+
+// AddInventoryAssignments adds the "inventory_assignments" edges to the InventoryAssignment entity.
+func (_u *GroupUpdateOne) AddInventoryAssignments(v ...*InventoryAssignment) *GroupUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddInventoryAssignmentIDs(ids...)
+}
+
+// AddInventoryTransactionIDs adds the "inventory_transactions" edge to the InventoryTransaction entity by IDs.
+func (_u *GroupUpdateOne) AddInventoryTransactionIDs(ids ...uuid.UUID) *GroupUpdateOne {
+	_u.mutation.AddInventoryTransactionIDs(ids...)
+	return _u
+}
+
+// AddInventoryTransactions adds the "inventory_transactions" edges to the InventoryTransaction entity.
+func (_u *GroupUpdateOne) AddInventoryTransactions(v ...*InventoryTransaction) *GroupUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddInventoryTransactionIDs(ids...)
 }
 
 // Mutation returns the GroupMutation object of the builder.
@@ -1266,6 +1557,69 @@ func (_u *GroupUpdateOne) RemoveLabelTemplates(v ...*LabelTemplate) *GroupUpdate
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveLabelTemplateIDs(ids...)
+}
+
+// ClearInventoryRecipients clears all "inventory_recipients" edges to the InventoryRecipient entity.
+func (_u *GroupUpdateOne) ClearInventoryRecipients() *GroupUpdateOne {
+	_u.mutation.ClearInventoryRecipients()
+	return _u
+}
+
+// RemoveInventoryRecipientIDs removes the "inventory_recipients" edge to InventoryRecipient entities by IDs.
+func (_u *GroupUpdateOne) RemoveInventoryRecipientIDs(ids ...uuid.UUID) *GroupUpdateOne {
+	_u.mutation.RemoveInventoryRecipientIDs(ids...)
+	return _u
+}
+
+// RemoveInventoryRecipients removes "inventory_recipients" edges to InventoryRecipient entities.
+func (_u *GroupUpdateOne) RemoveInventoryRecipients(v ...*InventoryRecipient) *GroupUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveInventoryRecipientIDs(ids...)
+}
+
+// ClearInventoryAssignments clears all "inventory_assignments" edges to the InventoryAssignment entity.
+func (_u *GroupUpdateOne) ClearInventoryAssignments() *GroupUpdateOne {
+	_u.mutation.ClearInventoryAssignments()
+	return _u
+}
+
+// RemoveInventoryAssignmentIDs removes the "inventory_assignments" edge to InventoryAssignment entities by IDs.
+func (_u *GroupUpdateOne) RemoveInventoryAssignmentIDs(ids ...uuid.UUID) *GroupUpdateOne {
+	_u.mutation.RemoveInventoryAssignmentIDs(ids...)
+	return _u
+}
+
+// RemoveInventoryAssignments removes "inventory_assignments" edges to InventoryAssignment entities.
+func (_u *GroupUpdateOne) RemoveInventoryAssignments(v ...*InventoryAssignment) *GroupUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveInventoryAssignmentIDs(ids...)
+}
+
+// ClearInventoryTransactions clears all "inventory_transactions" edges to the InventoryTransaction entity.
+func (_u *GroupUpdateOne) ClearInventoryTransactions() *GroupUpdateOne {
+	_u.mutation.ClearInventoryTransactions()
+	return _u
+}
+
+// RemoveInventoryTransactionIDs removes the "inventory_transactions" edge to InventoryTransaction entities by IDs.
+func (_u *GroupUpdateOne) RemoveInventoryTransactionIDs(ids ...uuid.UUID) *GroupUpdateOne {
+	_u.mutation.RemoveInventoryTransactionIDs(ids...)
+	return _u
+}
+
+// RemoveInventoryTransactions removes "inventory_transactions" edges to InventoryTransaction entities.
+func (_u *GroupUpdateOne) RemoveInventoryTransactions(v ...*InventoryTransaction) *GroupUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveInventoryTransactionIDs(ids...)
 }
 
 // Where appends a list predicates to the GroupUpdate builder.
@@ -1775,6 +2129,141 @@ func (_u *GroupUpdateOne) sqlSave(ctx context.Context) (_node *Group, err error)
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(labeltemplate.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.InventoryRecipientsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   group.InventoryRecipientsTable,
+			Columns: []string{group.InventoryRecipientsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(inventoryrecipient.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedInventoryRecipientsIDs(); len(nodes) > 0 && !_u.mutation.InventoryRecipientsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   group.InventoryRecipientsTable,
+			Columns: []string{group.InventoryRecipientsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(inventoryrecipient.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.InventoryRecipientsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   group.InventoryRecipientsTable,
+			Columns: []string{group.InventoryRecipientsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(inventoryrecipient.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.InventoryAssignmentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   group.InventoryAssignmentsTable,
+			Columns: []string{group.InventoryAssignmentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(inventoryassignment.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedInventoryAssignmentsIDs(); len(nodes) > 0 && !_u.mutation.InventoryAssignmentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   group.InventoryAssignmentsTable,
+			Columns: []string{group.InventoryAssignmentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(inventoryassignment.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.InventoryAssignmentsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   group.InventoryAssignmentsTable,
+			Columns: []string{group.InventoryAssignmentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(inventoryassignment.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.InventoryTransactionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   group.InventoryTransactionsTable,
+			Columns: []string{group.InventoryTransactionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(inventorytransaction.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedInventoryTransactionsIDs(); len(nodes) > 0 && !_u.mutation.InventoryTransactionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   group.InventoryTransactionsTable,
+			Columns: []string{group.InventoryTransactionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(inventorytransaction.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.InventoryTransactionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   group.InventoryTransactionsTable,
+			Columns: []string{group.InventoryTransactionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(inventorytransaction.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

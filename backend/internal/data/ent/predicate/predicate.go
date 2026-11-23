@@ -39,6 +39,15 @@ type Group func(*sql.Selector)
 // GroupInvitationToken is the predicate function for groupinvitationtoken builders.
 type GroupInvitationToken func(*sql.Selector)
 
+// InventoryAssignment is the predicate function for inventoryassignment builders.
+type InventoryAssignment func(*sql.Selector)
+
+// InventoryRecipient is the predicate function for inventoryrecipient builders.
+type InventoryRecipient func(*sql.Selector)
+
+// InventoryTransaction is the predicate function for inventorytransaction builders.
+type InventoryTransaction func(*sql.Selector)
+
 // LabelTemplate is the predicate function for labeltemplate builders.
 type LabelTemplate func(*sql.Selector)
 

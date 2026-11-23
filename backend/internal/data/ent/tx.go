@@ -34,6 +34,12 @@ type Tx struct {
 	Group *GroupClient
 	// GroupInvitationToken is the client for interacting with the GroupInvitationToken builders.
 	GroupInvitationToken *GroupInvitationTokenClient
+	// InventoryAssignment is the client for interacting with the InventoryAssignment builders.
+	InventoryAssignment *InventoryAssignmentClient
+	// InventoryRecipient is the client for interacting with the InventoryRecipient builders.
+	InventoryRecipient *InventoryRecipientClient
+	// InventoryTransaction is the client for interacting with the InventoryTransaction builders.
+	InventoryTransaction *InventoryTransactionClient
 	// LabelTemplate is the client for interacting with the LabelTemplate builders.
 	LabelTemplate *LabelTemplateClient
 	// MaintenanceEntry is the client for interacting with the MaintenanceEntry builders.
@@ -192,6 +198,9 @@ func (tx *Tx) init() {
 	tx.Export = NewExportClient(tx.config)
 	tx.Group = NewGroupClient(tx.config)
 	tx.GroupInvitationToken = NewGroupInvitationTokenClient(tx.config)
+	tx.InventoryAssignment = NewInventoryAssignmentClient(tx.config)
+	tx.InventoryRecipient = NewInventoryRecipientClient(tx.config)
+	tx.InventoryTransaction = NewInventoryTransactionClient(tx.config)
 	tx.LabelTemplate = NewLabelTemplateClient(tx.config)
 	tx.MaintenanceEntry = NewMaintenanceEntryClient(tx.config)
 	tx.Notifier = NewNotifierClient(tx.config)

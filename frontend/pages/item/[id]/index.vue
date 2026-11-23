@@ -46,6 +46,7 @@
   import DetailsSection from "~/components/global/DetailsSection/DetailsSection.vue";
   import ItemAttachmentsList from "~/components/Item/AttachmentsList.vue";
   import ItemViewSelectable from "~/components/Item/View/Selectable.vue";
+  import { Input } from "~/components/ui/input";
 
   const { t } = useI18n();
 
@@ -98,27 +99,109 @@
     if (!item.value) {
       return;
     }
-
-    const newQuantity = item.value.quantity + amount;
-    if (newQuantity < 0) {
-      toast.error(t("items.toast.quantity_cannot_negative"));
-      return;
+    if (amount > 0) {
+      const resp = await api.inventory.addStock({
+        itemId: item.value.id,
+        quantity: 1,
+        reasonOrNote: "",
+      });
+      if (resp.error) {
+        toast.error(t("items.toast.failed_adjust_quantity"));
+        return;
+      }
+    } else {
+      const reason = window.prompt(t("inventory.reason")) || "";
+      if (!reason.trim()) return;
+      const resp = await api.inventory.writeOffStock({
+        itemId: item.value.id,
+        quantity: 1,
+        reasonOrNote: reason,
+      });
+      if (resp.error) {
+        toast.error(t("items.toast.failed_adjust_quantity"));
+        return;
+      }
     }
+    await refresh();
+    await refreshInventory();
+  }
 
-    const resp = await api.items.patch(item.value.id, {
-      id: item.value.id,
-      quantity: newQuantity,
+  const inventoryIssue = ref({
+    recipientId: "",
+    quantity: 1,
+    serialNumber: "",
+    assetTag: "",
+    note: "",
+  });
+  const inventoryRecipients = ref<Array<{ id: string; firstName: string; lastName: string }>>([]);
+  const inventoryAssignments = ref<
+    Array<{
+      id: string;
+      recipientName: string;
+      quantity: number;
+      serialNumber: string;
+      assetTag: string;
+    }>
+  >([]);
+  const inventoryTransactions = ref<
+    Array<{ id: string; actionType: string; quantity: number; timestamp: string; reasonOrNote: string }>
+  >([]);
+
+  async function refreshInventory() {
+    const recipientsResponse = await api.inventory.recipients({ active: true });
+    inventoryRecipients.value = recipientsResponse.data || [];
+    if (!item.value) return;
+    const assignmentsResponse = await api.inventory.assignments({ itemId: item.value.id });
+    inventoryAssignments.value = assignmentsResponse.data || [];
+    const transactionsResponse = await api.inventory.itemTransactions(item.value.id);
+    inventoryTransactions.value = transactionsResponse.data || [];
+  }
+
+  async function issueInventory() {
+    if (!item.value || !inventoryIssue.value.recipientId) return;
+    const response = await api.inventory.issue({
+      itemId: item.value.id,
+      recipientId: inventoryIssue.value.recipientId,
+      quantity: inventoryIssue.value.quantity,
+      serialNumber: inventoryIssue.value.serialNumber,
+      assetTag: inventoryIssue.value.assetTag,
+      note: inventoryIssue.value.note,
     });
-
-    if (resp.error) {
-      toast.error(t("items.toast.failed_adjust_quantity"));
+    if (response.error) {
+      const body = response.data as unknown as { error?: string; message?: string };
+      toast.error(body?.error || body?.message || t("items.toast.failed_adjust_quantity"));
       return;
     }
+    inventoryIssue.value = { recipientId: "", quantity: 1, serialNumber: "", assetTag: "", note: "" };
+    await refresh();
+    await refreshInventory();
+  }
 
-    if (resp.data) {
-      item.value = resp.data;
+  async function returnInventory(assignmentId: string, status: "OK" | "DEFECTIVE" | "WRITTEN_OFF", reason = "") {
+    const response = await api.inventory.returnAssignment(assignmentId, {
+      assignmentId,
+      quantity: 1,
+      status,
+      reasonOrNote: reason,
+    });
+    if (response.error) return;
+    await refresh();
+    await refreshInventory();
+  }
+
+  function promptDefect(assignmentId: string) {
+    const reason = window.prompt(t("inventory.reason")) || "";
+    if (reason.trim()) {
+      void returnInventory(assignmentId, "DEFECTIVE", reason);
     }
   }
+
+  watch(itemId, refreshInventory, { immediate: true });
+  watch(item, value => {
+    if (value) {
+      void refreshInventory();
+    }
+  });
 
   type FilteredAttachments = {
     attachments: ItemAttachment[];
@@ -224,6 +307,18 @@
         name: "items.quantity",
         text: item.value?.quantity,
         slot: "quantity",
+      },
+      {
+        name: "inventory.available",
+        text: item.value?.availableQuantity,
+      },
+      {
+        name: "inventory.issued",
+        text: item.value?.quantity - item.value?.availableQuantity - item.value?.defectiveQuantity,
+      },
+      {
+        name: "inventory.defective",
+        text: item.value?.defectiveQuantity,
       },
       {
         name: "items.serial_number",
@@ -800,6 +895,58 @@
               </div>
             </template>
           </DetailsSection>
+        </BaseCard>
+
+        <BaseCard v-if="!hasNested" collapsable>
+          <template #title>{{ $t("inventory.title") }}</template>
+          <div class="grid gap-4 p-4 lg:grid-cols-2">
+            <div>
+              <h3 class="mb-3 font-semibold">{{ $t("inventory.issue") }}</h3>
+              <div class="grid gap-2">
+                <select v-model="inventoryIssue.recipientId" class="h-10 rounded-md border bg-background px-3">
+                  <option value="" disabled>{{ $t("inventory.recipient") }}</option>
+                  <option v-for="recipient in inventoryRecipients" :key="recipient.id" :value="recipient.id">
+                    {{ recipient.firstName }} {{ recipient.lastName }}
+                  </option>
+                </select>
+                <p v-if="inventoryRecipients.length === 0" class="text-sm text-muted-foreground">
+                  {{ $t("inventory.no_active_recipients") }}
+                </p>
+                <label class="flex flex-col gap-1 text-sm">
+                  {{ $t("inventory.quantity") }}
+                  <Input v-model.number="inventoryIssue.quantity" type="number" min="1" />
+                </label>
+                <Input v-model="inventoryIssue.serialNumber" :placeholder="$t('inventory.serial_number')" />
+                <Input v-model="inventoryIssue.assetTag" :placeholder="$t('inventory.asset_tag')" />
+                <Input v-model="inventoryIssue.note" :placeholder="$t('inventory.note')" />
+                <Button @click="issueInventory">{{ $t("inventory.issue") }}</Button>
+              </div>
+            </div>
+            <div>
+              <h3 class="mb-3 font-semibold">{{ $t("inventory.current_assignments") }}</h3>
+              <div v-for="assignment in inventoryAssignments" :key="assignment.id" class="border-t py-3">
+                <div class="font-medium">{{ assignment.recipientName }} · {{ assignment.quantity }}x</div>
+                <div class="mt-2 flex gap-2">
+                  <Button size="sm" @click="returnInventory(assignment.id, 'OK')">{{
+                    $t("inventory.return_ok")
+                  }}</Button>
+                  <Button size="sm" variant="outline" @click="returnInventory(assignment.id, 'WRITTEN_OFF')">
+                    {{ $t("inventory.return_written_off") }}
+                  </Button>
+                  <Button size="sm" variant="destructive" @click="promptDefect(assignment.id)">
+                    {{ $t("inventory.return_defective") }}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="border-t p-4">
+            <h3 class="mb-3 font-semibold">{{ $t("inventory.history") }}</h3>
+            <div v-for="row in inventoryTransactions" :key="row.id" class="border-t py-2 text-sm">
+              {{ row.timestamp }} · {{ row.actionType }} · {{ row.quantity }}
+              <span v-if="row.reasonOrNote"> · {{ row.reasonOrNote }}</span>
+            </div>
+          </div>
         </BaseCard>
 
         <!-- anything in this is not rendered if on another page -->

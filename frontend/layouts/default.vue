@@ -253,6 +253,7 @@
   import MdiPlus from "~icons/mdi/plus";
   import MdiLogout from "~icons/mdi/logout";
   import MdiFileDocumentMultiple from "~icons/mdi/file-document-multiple";
+  import MdiAccountMultiple from "~icons/mdi/account-multiple";
   import MdiChevronRight from "~icons/mdi/chevron-right";
 
   import {
@@ -444,6 +445,27 @@
       active: computed(() => route.path === "/maintenance"),
       name: computed(() => t("menu.maintenance")),
       to: "/maintenance",
+    },
+    {
+      icon: MdiAccountMultiple,
+      id: 8,
+      active: computed(() => route.path.startsWith("/inventory")),
+      name: computed(() => t("inventory.title")),
+      to: "/inventory/recipients",
+      collapsible: [
+        {
+          id: 81,
+          active: computed(() => route.path.startsWith("/inventory/recipients")),
+          name: computed(() => t("inventory.recipients")),
+          to: "/inventory/recipients",
+        },
+        {
+          id: 82,
+          active: computed(() => route.path === "/inventory/history"),
+          name: computed(() => t("inventory.history")),
+          to: "/inventory/history",
+        },
+      ],
     },
     {
       icon: MdiAccount,

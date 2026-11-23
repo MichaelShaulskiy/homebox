@@ -91,6 +91,16 @@ func Quantity(v float64) predicate.Entity {
 	return predicate.Entity(sql.FieldEQ(FieldQuantity, v))
 }
 
+// AvailableQuantity applies equality check predicate on the "available_quantity" field. It's identical to AvailableQuantityEQ.
+func AvailableQuantity(v float64) predicate.Entity {
+	return predicate.Entity(sql.FieldEQ(FieldAvailableQuantity, v))
+}
+
+// DefectiveQuantity applies equality check predicate on the "defective_quantity" field. It's identical to DefectiveQuantityEQ.
+func DefectiveQuantity(v float64) predicate.Entity {
+	return predicate.Entity(sql.FieldEQ(FieldDefectiveQuantity, v))
+}
+
 // Insured applies equality check predicate on the "insured" field. It's identical to InsuredEQ.
 func Insured(v bool) predicate.Entity {
 	return predicate.Entity(sql.FieldEQ(FieldInsured, v))
@@ -584,6 +594,86 @@ func QuantityLT(v float64) predicate.Entity {
 // QuantityLTE applies the LTE predicate on the "quantity" field.
 func QuantityLTE(v float64) predicate.Entity {
 	return predicate.Entity(sql.FieldLTE(FieldQuantity, v))
+}
+
+// AvailableQuantityEQ applies the EQ predicate on the "available_quantity" field.
+func AvailableQuantityEQ(v float64) predicate.Entity {
+	return predicate.Entity(sql.FieldEQ(FieldAvailableQuantity, v))
+}
+
+// AvailableQuantityNEQ applies the NEQ predicate on the "available_quantity" field.
+func AvailableQuantityNEQ(v float64) predicate.Entity {
+	return predicate.Entity(sql.FieldNEQ(FieldAvailableQuantity, v))
+}
+
+// AvailableQuantityIn applies the In predicate on the "available_quantity" field.
+func AvailableQuantityIn(vs ...float64) predicate.Entity {
+	return predicate.Entity(sql.FieldIn(FieldAvailableQuantity, vs...))
+}
+
+// AvailableQuantityNotIn applies the NotIn predicate on the "available_quantity" field.
+func AvailableQuantityNotIn(vs ...float64) predicate.Entity {
+	return predicate.Entity(sql.FieldNotIn(FieldAvailableQuantity, vs...))
+}
+
+// AvailableQuantityGT applies the GT predicate on the "available_quantity" field.
+func AvailableQuantityGT(v float64) predicate.Entity {
+	return predicate.Entity(sql.FieldGT(FieldAvailableQuantity, v))
+}
+
+// AvailableQuantityGTE applies the GTE predicate on the "available_quantity" field.
+func AvailableQuantityGTE(v float64) predicate.Entity {
+	return predicate.Entity(sql.FieldGTE(FieldAvailableQuantity, v))
+}
+
+// AvailableQuantityLT applies the LT predicate on the "available_quantity" field.
+func AvailableQuantityLT(v float64) predicate.Entity {
+	return predicate.Entity(sql.FieldLT(FieldAvailableQuantity, v))
+}
+
+// AvailableQuantityLTE applies the LTE predicate on the "available_quantity" field.
+func AvailableQuantityLTE(v float64) predicate.Entity {
+	return predicate.Entity(sql.FieldLTE(FieldAvailableQuantity, v))
+}
+
+// DefectiveQuantityEQ applies the EQ predicate on the "defective_quantity" field.
+func DefectiveQuantityEQ(v float64) predicate.Entity {
+	return predicate.Entity(sql.FieldEQ(FieldDefectiveQuantity, v))
+}
+
+// DefectiveQuantityNEQ applies the NEQ predicate on the "defective_quantity" field.
+func DefectiveQuantityNEQ(v float64) predicate.Entity {
+	return predicate.Entity(sql.FieldNEQ(FieldDefectiveQuantity, v))
+}
+
+// DefectiveQuantityIn applies the In predicate on the "defective_quantity" field.
+func DefectiveQuantityIn(vs ...float64) predicate.Entity {
+	return predicate.Entity(sql.FieldIn(FieldDefectiveQuantity, vs...))
+}
+
+// DefectiveQuantityNotIn applies the NotIn predicate on the "defective_quantity" field.
+func DefectiveQuantityNotIn(vs ...float64) predicate.Entity {
+	return predicate.Entity(sql.FieldNotIn(FieldDefectiveQuantity, vs...))
+}
+
+// DefectiveQuantityGT applies the GT predicate on the "defective_quantity" field.
+func DefectiveQuantityGT(v float64) predicate.Entity {
+	return predicate.Entity(sql.FieldGT(FieldDefectiveQuantity, v))
+}
+
+// DefectiveQuantityGTE applies the GTE predicate on the "defective_quantity" field.
+func DefectiveQuantityGTE(v float64) predicate.Entity {
+	return predicate.Entity(sql.FieldGTE(FieldDefectiveQuantity, v))
+}
+
+// DefectiveQuantityLT applies the LT predicate on the "defective_quantity" field.
+func DefectiveQuantityLT(v float64) predicate.Entity {
+	return predicate.Entity(sql.FieldLT(FieldDefectiveQuantity, v))
+}
+
+// DefectiveQuantityLTE applies the LTE predicate on the "defective_quantity" field.
+func DefectiveQuantityLTE(v float64) predicate.Entity {
+	return predicate.Entity(sql.FieldLTE(FieldDefectiveQuantity, v))
 }
 
 // InsuredEQ applies the EQ predicate on the "insured" field.
@@ -1643,6 +1733,52 @@ func HasAttachments() predicate.Entity {
 func HasAttachmentsWith(preds ...predicate.Attachment) predicate.Entity {
 	return predicate.Entity(func(s *sql.Selector) {
 		step := newAttachmentsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasInventoryAssignments applies the HasEdge predicate on the "inventory_assignments" edge.
+func HasInventoryAssignments() predicate.Entity {
+	return predicate.Entity(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, InventoryAssignmentsTable, InventoryAssignmentsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasInventoryAssignmentsWith applies the HasEdge predicate on the "inventory_assignments" edge with a given conditions (other predicates).
+func HasInventoryAssignmentsWith(preds ...predicate.InventoryAssignment) predicate.Entity {
+	return predicate.Entity(func(s *sql.Selector) {
+		step := newInventoryAssignmentsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasInventoryTransactions applies the HasEdge predicate on the "inventory_transactions" edge.
+func HasInventoryTransactions() predicate.Entity {
+	return predicate.Entity(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, InventoryTransactionsTable, InventoryTransactionsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasInventoryTransactionsWith applies the HasEdge predicate on the "inventory_transactions" edge with a given conditions (other predicates).
+func HasInventoryTransactionsWith(preds ...predicate.InventoryTransaction) predicate.Entity {
+	return predicate.Entity(func(s *sql.Selector) {
+		step := newInventoryTransactionsStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

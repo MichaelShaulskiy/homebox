@@ -23,6 +23,9 @@ import (
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/export"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/group"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/groupinvitationtoken"
+	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/inventoryassignment"
+	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/inventoryrecipient"
+	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/inventorytransaction"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/labeltemplate"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/maintenanceentry"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/notifier"
@@ -102,6 +105,9 @@ func checkColumn(t, c string) error {
 			export.Table:               export.ValidColumn,
 			group.Table:                group.ValidColumn,
 			groupinvitationtoken.Table: groupinvitationtoken.ValidColumn,
+			inventoryassignment.Table:  inventoryassignment.ValidColumn,
+			inventoryrecipient.Table:   inventoryrecipient.ValidColumn,
+			inventorytransaction.Table: inventorytransaction.ValidColumn,
 			labeltemplate.Table:        labeltemplate.ValidColumn,
 			maintenanceentry.Table:     maintenanceentry.ValidColumn,
 			notifier.Table:             notifier.ValidColumn,

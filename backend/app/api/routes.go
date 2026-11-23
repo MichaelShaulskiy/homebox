@@ -214,6 +214,22 @@ func (a *app) mountRoutes(r *chi.Mux, chain *errchain.ErrChain, repos *repo.AllR
 		r.Delete("/entities/{id}", chain.ToHandlerFunc(v1Ctrl.HandleEntityDelete(), userMW...))
 		r.Post("/entities/{id}/duplicate", chain.ToHandlerFunc(v1Ctrl.HandleEntityDuplicate(), userMW...))
 
+		// Inventory recipients, assignments, and append-only movement log
+		r.Get("/inventory/recipients", chain.ToHandlerFunc(v1Ctrl.HandleInventoryRecipientsGetAll(), userMW...))
+		r.Post("/inventory/recipients", chain.ToHandlerFunc(v1Ctrl.HandleInventoryRecipientCreate(), userMW...))
+		r.Get("/inventory/recipients/{id}", chain.ToHandlerFunc(v1Ctrl.HandleInventoryRecipientGet(), userMW...))
+		r.Put("/inventory/recipients/{id}", chain.ToHandlerFunc(v1Ctrl.HandleInventoryRecipientUpdate(), userMW...))
+		r.Post("/inventory/recipients/{id}/deactivate", chain.ToHandlerFunc(v1Ctrl.HandleInventoryRecipientDeactivate(), userMW...))
+		r.Get("/inventory/recipients/{id}/transactions", chain.ToHandlerFunc(v1Ctrl.HandleInventoryRecipientTransactions(), userMW...))
+		r.Post("/inventory/issue", chain.ToHandlerFunc(v1Ctrl.HandleInventoryIssue(), userMW...))
+		r.Post("/inventory/stock", chain.ToHandlerFunc(v1Ctrl.HandleInventoryStockAdd(), userMW...))
+		r.Post("/inventory/write-off", chain.ToHandlerFunc(v1Ctrl.HandleInventoryStockWriteOff(), userMW...))
+		r.Get("/inventory/assignments", chain.ToHandlerFunc(v1Ctrl.HandleInventoryAssignmentsGetAll(), userMW...))
+		r.Post("/inventory/assignments/{id}/return", chain.ToHandlerFunc(v1Ctrl.HandleInventoryReturn(), userMW...))
+		r.Get("/inventory/items/{id}/transactions", chain.ToHandlerFunc(v1Ctrl.HandleInventoryItemTransactions(), userMW...))
+		r.Get("/inventory/transactions/export", chain.ToHandlerFunc(v1Ctrl.HandleInventoryTransactionsCSV(), userMW...))
+		r.Get("/inventory/transactions", chain.ToHandlerFunc(v1Ctrl.HandleInventoryTransactionsGetAll(), userMW...))
+
 		// Entity attachment endpoints
 		r.Post("/entities/{id}/attachments", chain.ToHandlerFunc(v1Ctrl.HandleEntityAttachmentCreate(), userMW...))
 		r.Post("/entities/{id}/attachments/external", chain.ToHandlerFunc(v1Ctrl.HandleEntityAttachmentExternalCreate(), userMW...))
