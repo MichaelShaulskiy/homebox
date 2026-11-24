@@ -101,6 +101,21 @@ func DefectiveQuantity(v float64) predicate.Entity {
 	return predicate.Entity(sql.FieldEQ(FieldDefectiveQuantity, v))
 }
 
+// MinimumQuantity applies equality check predicate on the "minimum_quantity" field. It's identical to MinimumQuantityEQ.
+func MinimumQuantity(v float64) predicate.Entity {
+	return predicate.Entity(sql.FieldEQ(FieldMinimumQuantity, v))
+}
+
+// MaximumQuantity applies equality check predicate on the "maximum_quantity" field. It's identical to MaximumQuantityEQ.
+func MaximumQuantity(v float64) predicate.Entity {
+	return predicate.Entity(sql.FieldEQ(FieldMaximumQuantity, v))
+}
+
+// ReorderThreshold applies equality check predicate on the "reorder_threshold" field. It's identical to ReorderThresholdEQ.
+func ReorderThreshold(v float64) predicate.Entity {
+	return predicate.Entity(sql.FieldEQ(FieldReorderThreshold, v))
+}
+
 // Insured applies equality check predicate on the "insured" field. It's identical to InsuredEQ.
 func Insured(v bool) predicate.Entity {
 	return predicate.Entity(sql.FieldEQ(FieldInsured, v))
@@ -674,6 +689,156 @@ func DefectiveQuantityLT(v float64) predicate.Entity {
 // DefectiveQuantityLTE applies the LTE predicate on the "defective_quantity" field.
 func DefectiveQuantityLTE(v float64) predicate.Entity {
 	return predicate.Entity(sql.FieldLTE(FieldDefectiveQuantity, v))
+}
+
+// MinimumQuantityEQ applies the EQ predicate on the "minimum_quantity" field.
+func MinimumQuantityEQ(v float64) predicate.Entity {
+	return predicate.Entity(sql.FieldEQ(FieldMinimumQuantity, v))
+}
+
+// MinimumQuantityNEQ applies the NEQ predicate on the "minimum_quantity" field.
+func MinimumQuantityNEQ(v float64) predicate.Entity {
+	return predicate.Entity(sql.FieldNEQ(FieldMinimumQuantity, v))
+}
+
+// MinimumQuantityIn applies the In predicate on the "minimum_quantity" field.
+func MinimumQuantityIn(vs ...float64) predicate.Entity {
+	return predicate.Entity(sql.FieldIn(FieldMinimumQuantity, vs...))
+}
+
+// MinimumQuantityNotIn applies the NotIn predicate on the "minimum_quantity" field.
+func MinimumQuantityNotIn(vs ...float64) predicate.Entity {
+	return predicate.Entity(sql.FieldNotIn(FieldMinimumQuantity, vs...))
+}
+
+// MinimumQuantityGT applies the GT predicate on the "minimum_quantity" field.
+func MinimumQuantityGT(v float64) predicate.Entity {
+	return predicate.Entity(sql.FieldGT(FieldMinimumQuantity, v))
+}
+
+// MinimumQuantityGTE applies the GTE predicate on the "minimum_quantity" field.
+func MinimumQuantityGTE(v float64) predicate.Entity {
+	return predicate.Entity(sql.FieldGTE(FieldMinimumQuantity, v))
+}
+
+// MinimumQuantityLT applies the LT predicate on the "minimum_quantity" field.
+func MinimumQuantityLT(v float64) predicate.Entity {
+	return predicate.Entity(sql.FieldLT(FieldMinimumQuantity, v))
+}
+
+// MinimumQuantityLTE applies the LTE predicate on the "minimum_quantity" field.
+func MinimumQuantityLTE(v float64) predicate.Entity {
+	return predicate.Entity(sql.FieldLTE(FieldMinimumQuantity, v))
+}
+
+// MinimumQuantityIsNil applies the IsNil predicate on the "minimum_quantity" field.
+func MinimumQuantityIsNil() predicate.Entity {
+	return predicate.Entity(sql.FieldIsNull(FieldMinimumQuantity))
+}
+
+// MinimumQuantityNotNil applies the NotNil predicate on the "minimum_quantity" field.
+func MinimumQuantityNotNil() predicate.Entity {
+	return predicate.Entity(sql.FieldNotNull(FieldMinimumQuantity))
+}
+
+// MaximumQuantityEQ applies the EQ predicate on the "maximum_quantity" field.
+func MaximumQuantityEQ(v float64) predicate.Entity {
+	return predicate.Entity(sql.FieldEQ(FieldMaximumQuantity, v))
+}
+
+// MaximumQuantityNEQ applies the NEQ predicate on the "maximum_quantity" field.
+func MaximumQuantityNEQ(v float64) predicate.Entity {
+	return predicate.Entity(sql.FieldNEQ(FieldMaximumQuantity, v))
+}
+
+// MaximumQuantityIn applies the In predicate on the "maximum_quantity" field.
+func MaximumQuantityIn(vs ...float64) predicate.Entity {
+	return predicate.Entity(sql.FieldIn(FieldMaximumQuantity, vs...))
+}
+
+// MaximumQuantityNotIn applies the NotIn predicate on the "maximum_quantity" field.
+func MaximumQuantityNotIn(vs ...float64) predicate.Entity {
+	return predicate.Entity(sql.FieldNotIn(FieldMaximumQuantity, vs...))
+}
+
+// MaximumQuantityGT applies the GT predicate on the "maximum_quantity" field.
+func MaximumQuantityGT(v float64) predicate.Entity {
+	return predicate.Entity(sql.FieldGT(FieldMaximumQuantity, v))
+}
+
+// MaximumQuantityGTE applies the GTE predicate on the "maximum_quantity" field.
+func MaximumQuantityGTE(v float64) predicate.Entity {
+	return predicate.Entity(sql.FieldGTE(FieldMaximumQuantity, v))
+}
+
+// MaximumQuantityLT applies the LT predicate on the "maximum_quantity" field.
+func MaximumQuantityLT(v float64) predicate.Entity {
+	return predicate.Entity(sql.FieldLT(FieldMaximumQuantity, v))
+}
+
+// MaximumQuantityLTE applies the LTE predicate on the "maximum_quantity" field.
+func MaximumQuantityLTE(v float64) predicate.Entity {
+	return predicate.Entity(sql.FieldLTE(FieldMaximumQuantity, v))
+}
+
+// MaximumQuantityIsNil applies the IsNil predicate on the "maximum_quantity" field.
+func MaximumQuantityIsNil() predicate.Entity {
+	return predicate.Entity(sql.FieldIsNull(FieldMaximumQuantity))
+}
+
+// MaximumQuantityNotNil applies the NotNil predicate on the "maximum_quantity" field.
+func MaximumQuantityNotNil() predicate.Entity {
+	return predicate.Entity(sql.FieldNotNull(FieldMaximumQuantity))
+}
+
+// ReorderThresholdEQ applies the EQ predicate on the "reorder_threshold" field.
+func ReorderThresholdEQ(v float64) predicate.Entity {
+	return predicate.Entity(sql.FieldEQ(FieldReorderThreshold, v))
+}
+
+// ReorderThresholdNEQ applies the NEQ predicate on the "reorder_threshold" field.
+func ReorderThresholdNEQ(v float64) predicate.Entity {
+	return predicate.Entity(sql.FieldNEQ(FieldReorderThreshold, v))
+}
+
+// ReorderThresholdIn applies the In predicate on the "reorder_threshold" field.
+func ReorderThresholdIn(vs ...float64) predicate.Entity {
+	return predicate.Entity(sql.FieldIn(FieldReorderThreshold, vs...))
+}
+
+// ReorderThresholdNotIn applies the NotIn predicate on the "reorder_threshold" field.
+func ReorderThresholdNotIn(vs ...float64) predicate.Entity {
+	return predicate.Entity(sql.FieldNotIn(FieldReorderThreshold, vs...))
+}
+
+// ReorderThresholdGT applies the GT predicate on the "reorder_threshold" field.
+func ReorderThresholdGT(v float64) predicate.Entity {
+	return predicate.Entity(sql.FieldGT(FieldReorderThreshold, v))
+}
+
+// ReorderThresholdGTE applies the GTE predicate on the "reorder_threshold" field.
+func ReorderThresholdGTE(v float64) predicate.Entity {
+	return predicate.Entity(sql.FieldGTE(FieldReorderThreshold, v))
+}
+
+// ReorderThresholdLT applies the LT predicate on the "reorder_threshold" field.
+func ReorderThresholdLT(v float64) predicate.Entity {
+	return predicate.Entity(sql.FieldLT(FieldReorderThreshold, v))
+}
+
+// ReorderThresholdLTE applies the LTE predicate on the "reorder_threshold" field.
+func ReorderThresholdLTE(v float64) predicate.Entity {
+	return predicate.Entity(sql.FieldLTE(FieldReorderThreshold, v))
+}
+
+// ReorderThresholdIsNil applies the IsNil predicate on the "reorder_threshold" field.
+func ReorderThresholdIsNil() predicate.Entity {
+	return predicate.Entity(sql.FieldIsNull(FieldReorderThreshold))
+}
+
+// ReorderThresholdNotNil applies the NotNil predicate on the "reorder_threshold" field.
+func ReorderThresholdNotNil() predicate.Entity {
+	return predicate.Entity(sql.FieldNotNull(FieldReorderThreshold))
 }
 
 // InsuredEQ applies the EQ predicate on the "insured" field.

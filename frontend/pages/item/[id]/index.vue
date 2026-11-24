@@ -77,6 +77,13 @@
     return route.fullPath.split("/").at(-1) !== itemId.value;
   });
 
+  const shouldReorder = computed<boolean>(() => {
+    if (!item.value || item.value.reorderThreshold == null) {
+      return false;
+    }
+    return item.value.availableQuantity <= item.value.reorderThreshold;
+  });
+
   const { data: item, refresh } = useAsyncData(itemId.value, async () => {
     const { data, error } = await api.items.get(itemId.value);
     if (error) {
@@ -760,6 +767,13 @@
     </Dialog>
 
     <section>
+      <div
+        v-if="shouldReorder"
+        class="mb-3 rounded-md border border-amber-500 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-900"
+        role="alert"
+      >
+        {{ $t("items.reorder") }}
+      </div>
       <Card class="p-3">
         <header :class="{ 'mb-2': item.description }">
           <div class="flex flex-wrap items-end gap-2">

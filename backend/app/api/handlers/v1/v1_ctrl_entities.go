@@ -18,6 +18,7 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/samber/lo"
 	"github.com/sysadminsmedia/homebox/backend/internal/core/services"
+	userent "github.com/sysadminsmedia/homebox/backend/internal/data/ent/user"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/repo"
 	"github.com/sysadminsmedia/homebox/backend/internal/sys/validate"
 	"github.com/sysadminsmedia/homebox/backend/internal/web/adapters"
@@ -41,6 +42,11 @@ func recordCtrlSpanError(span trace.Span, err error) {
 
 func startEntityCtrlSpan(ctx context.Context, name string, attrs ...attribute.KeyValue) (context.Context, trace.Span) {
 	return entityCtrlTracer().Start(ctx, name, trace.WithAttributes(attrs...))
+}
+
+func isStockThresholdSuperadmin(ctx services.Context) bool {
+	return ctx.User != nil &&
+		(ctx.User.IsSuperuser || ctx.User.AccountRole == userent.AccountRoleSuperadmin)
 }
 
 // HandleEntitiesGetAll godoc
@@ -230,6 +236,11 @@ func (ctrl *V1Controller) HandleEntitiesCreate() errchain.HandlerFunc {
 		defer span.End()
 
 		ctx := services.NewContext(spanCtx)
+		if !isStockThresholdSuperadmin(ctx) {
+			body.MinimumQuantity = nil
+			body.MaximumQuantity = nil
+			body.ReorderThreshold = nil
+		}
 		span.SetAttributes(attribute.String("group.id", ctx.GID.String()))
 		out, err := ctrl.svc.Entities.Create(ctx, body)
 		if err != nil {
@@ -323,6 +334,11 @@ func (ctrl *V1Controller) HandleEntityUpdate() errchain.HandlerFunc {
 
 		auth := services.NewContext(spanCtx)
 		span.SetAttributes(attribute.String("group.id", auth.GID.String()))
+		if !isStockThresholdSuperadmin(auth) {
+			body.MinimumQuantity = nil
+			body.MaximumQuantity = nil
+			body.ReorderThreshold = nil
+		}
 
 		body.ID = ID
 		out, err := ctrl.repo.Entities.UpdateByGroup(auth, auth.GID, body)
@@ -359,6 +375,11 @@ func (ctrl *V1Controller) HandleEntityPatch() errchain.HandlerFunc {
 
 		auth := services.NewContext(spanCtx)
 		span.SetAttributes(attribute.String("group.id", auth.GID.String()))
+		if !isStockThresholdSuperadmin(auth) {
+			body.MinimumQuantity = nil
+			body.MaximumQuantity = nil
+			body.ReorderThreshold = nil
+		}
 
 		body.ID = ID
 		err := ctrl.repo.Entities.Patch(auth, auth.GID, ID, body)

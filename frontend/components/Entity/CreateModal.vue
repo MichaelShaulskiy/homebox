@@ -174,6 +174,29 @@
         step="any"
         :min="0"
       />
+      <div v-if="canConfigureStock && !selectedEntityType?.isLocation" class="grid gap-2 sm:grid-cols-3">
+        <FormTextField
+          v-model.number="form.minimumQuantity"
+          :label="$t('items.minimum_quantity')"
+          type="number"
+          step="any"
+          :min="0"
+        />
+        <FormTextField
+          v-model.number="form.maximumQuantity"
+          :label="$t('items.maximum_quantity')"
+          type="number"
+          step="any"
+          :min="0"
+        />
+        <FormTextField
+          v-model.number="form.reorderThreshold"
+          :label="$t('items.reorder_threshold')"
+          type="number"
+          step="any"
+          :min="0"
+        />
+      </div>
       <FormTextArea
         v-model="form.description"
         :label="
@@ -361,6 +384,10 @@
   const LAST_TEMPLATE_KEY = "homebox:lastUsedTemplate";
 
   const loading = ref(false);
+  const auth = useAuthContext();
+  const canConfigureStock = computed(
+    () => auth.user?.accountRole === "superadmin" || auth.user?.isSuperuser
+  );
   const focused = ref(false);
   const selectedTemplate = ref<EntityTemplateSummary | null>(null);
   const templateData = ref<EntityTemplateOut | null>(null);
@@ -373,6 +400,9 @@
     parentId: null,
     name: "",
     quantity: 1,
+    minimumQuantity: undefined as number | undefined,
+    maximumQuantity: undefined as number | undefined,
+    reorderThreshold: undefined as number | undefined,
     description: "",
     color: "",
     // Populated by the barcode product-import flow; passed through on create (#1578).
@@ -693,6 +723,9 @@
           form.parentId && chosenLocationId && chosenLocationId !== inheritedLocationId.value ? chosenLocationId : null,
         name: form.name,
         quantity: form.quantity,
+        minimumQuantity: canConfigureStock.value ? form.minimumQuantity : undefined,
+        maximumQuantity: canConfigureStock.value ? form.maximumQuantity : undefined,
+        reorderThreshold: canConfigureStock.value ? form.reorderThreshold : undefined,
         description: form.description,
         manufacturer: form.manufacturer,
         modelNumber: form.modelNumber,

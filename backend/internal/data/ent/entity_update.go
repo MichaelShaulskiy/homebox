@@ -180,6 +180,87 @@ func (_u *EntityUpdate) AddDefectiveQuantity(v float64) *EntityUpdate {
 	return _u
 }
 
+// SetMinimumQuantity sets the "minimum_quantity" field.
+func (_u *EntityUpdate) SetMinimumQuantity(v float64) *EntityUpdate {
+	_u.mutation.ResetMinimumQuantity()
+	_u.mutation.SetMinimumQuantity(v)
+	return _u
+}
+
+// SetNillableMinimumQuantity sets the "minimum_quantity" field if the given value is not nil.
+func (_u *EntityUpdate) SetNillableMinimumQuantity(v *float64) *EntityUpdate {
+	if v != nil {
+		_u.SetMinimumQuantity(*v)
+	}
+	return _u
+}
+
+// AddMinimumQuantity adds value to the "minimum_quantity" field.
+func (_u *EntityUpdate) AddMinimumQuantity(v float64) *EntityUpdate {
+	_u.mutation.AddMinimumQuantity(v)
+	return _u
+}
+
+// ClearMinimumQuantity clears the value of the "minimum_quantity" field.
+func (_u *EntityUpdate) ClearMinimumQuantity() *EntityUpdate {
+	_u.mutation.ClearMinimumQuantity()
+	return _u
+}
+
+// SetMaximumQuantity sets the "maximum_quantity" field.
+func (_u *EntityUpdate) SetMaximumQuantity(v float64) *EntityUpdate {
+	_u.mutation.ResetMaximumQuantity()
+	_u.mutation.SetMaximumQuantity(v)
+	return _u
+}
+
+// SetNillableMaximumQuantity sets the "maximum_quantity" field if the given value is not nil.
+func (_u *EntityUpdate) SetNillableMaximumQuantity(v *float64) *EntityUpdate {
+	if v != nil {
+		_u.SetMaximumQuantity(*v)
+	}
+	return _u
+}
+
+// AddMaximumQuantity adds value to the "maximum_quantity" field.
+func (_u *EntityUpdate) AddMaximumQuantity(v float64) *EntityUpdate {
+	_u.mutation.AddMaximumQuantity(v)
+	return _u
+}
+
+// ClearMaximumQuantity clears the value of the "maximum_quantity" field.
+func (_u *EntityUpdate) ClearMaximumQuantity() *EntityUpdate {
+	_u.mutation.ClearMaximumQuantity()
+	return _u
+}
+
+// SetReorderThreshold sets the "reorder_threshold" field.
+func (_u *EntityUpdate) SetReorderThreshold(v float64) *EntityUpdate {
+	_u.mutation.ResetReorderThreshold()
+	_u.mutation.SetReorderThreshold(v)
+	return _u
+}
+
+// SetNillableReorderThreshold sets the "reorder_threshold" field if the given value is not nil.
+func (_u *EntityUpdate) SetNillableReorderThreshold(v *float64) *EntityUpdate {
+	if v != nil {
+		_u.SetReorderThreshold(*v)
+	}
+	return _u
+}
+
+// AddReorderThreshold adds value to the "reorder_threshold" field.
+func (_u *EntityUpdate) AddReorderThreshold(v float64) *EntityUpdate {
+	_u.mutation.AddReorderThreshold(v)
+	return _u
+}
+
+// ClearReorderThreshold clears the value of the "reorder_threshold" field.
+func (_u *EntityUpdate) ClearReorderThreshold() *EntityUpdate {
+	_u.mutation.ClearReorderThreshold()
+	return _u
+}
+
 // SetInsured sets the "insured" field.
 func (_u *EntityUpdate) SetInsured(v bool) *EntityUpdate {
 	_u.mutation.SetInsured(v)
@@ -1022,6 +1103,33 @@ func (_u *EntityUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if value, ok := _u.mutation.AddedDefectiveQuantity(); ok {
 		_spec.AddField(entity.FieldDefectiveQuantity, field.TypeFloat64, value)
 	}
+	if value, ok := _u.mutation.MinimumQuantity(); ok {
+		_spec.SetField(entity.FieldMinimumQuantity, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.AddedMinimumQuantity(); ok {
+		_spec.AddField(entity.FieldMinimumQuantity, field.TypeFloat64, value)
+	}
+	if _u.mutation.MinimumQuantityCleared() {
+		_spec.ClearField(entity.FieldMinimumQuantity, field.TypeFloat64)
+	}
+	if value, ok := _u.mutation.MaximumQuantity(); ok {
+		_spec.SetField(entity.FieldMaximumQuantity, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.AddedMaximumQuantity(); ok {
+		_spec.AddField(entity.FieldMaximumQuantity, field.TypeFloat64, value)
+	}
+	if _u.mutation.MaximumQuantityCleared() {
+		_spec.ClearField(entity.FieldMaximumQuantity, field.TypeFloat64)
+	}
+	if value, ok := _u.mutation.ReorderThreshold(); ok {
+		_spec.SetField(entity.FieldReorderThreshold, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.AddedReorderThreshold(); ok {
+		_spec.AddField(entity.FieldReorderThreshold, field.TypeFloat64, value)
+	}
+	if _u.mutation.ReorderThresholdCleared() {
+		_spec.ClearField(entity.FieldReorderThreshold, field.TypeFloat64)
+	}
 	if value, ok := _u.mutation.Insured(); ok {
 		_spec.SetField(entity.FieldInsured, field.TypeBool, value)
 	}
@@ -1748,6 +1856,87 @@ func (_u *EntityUpdateOne) SetNillableDefectiveQuantity(v *float64) *EntityUpdat
 // AddDefectiveQuantity adds value to the "defective_quantity" field.
 func (_u *EntityUpdateOne) AddDefectiveQuantity(v float64) *EntityUpdateOne {
 	_u.mutation.AddDefectiveQuantity(v)
+	return _u
+}
+
+// SetMinimumQuantity sets the "minimum_quantity" field.
+func (_u *EntityUpdateOne) SetMinimumQuantity(v float64) *EntityUpdateOne {
+	_u.mutation.ResetMinimumQuantity()
+	_u.mutation.SetMinimumQuantity(v)
+	return _u
+}
+
+// SetNillableMinimumQuantity sets the "minimum_quantity" field if the given value is not nil.
+func (_u *EntityUpdateOne) SetNillableMinimumQuantity(v *float64) *EntityUpdateOne {
+	if v != nil {
+		_u.SetMinimumQuantity(*v)
+	}
+	return _u
+}
+
+// AddMinimumQuantity adds value to the "minimum_quantity" field.
+func (_u *EntityUpdateOne) AddMinimumQuantity(v float64) *EntityUpdateOne {
+	_u.mutation.AddMinimumQuantity(v)
+	return _u
+}
+
+// ClearMinimumQuantity clears the value of the "minimum_quantity" field.
+func (_u *EntityUpdateOne) ClearMinimumQuantity() *EntityUpdateOne {
+	_u.mutation.ClearMinimumQuantity()
+	return _u
+}
+
+// SetMaximumQuantity sets the "maximum_quantity" field.
+func (_u *EntityUpdateOne) SetMaximumQuantity(v float64) *EntityUpdateOne {
+	_u.mutation.ResetMaximumQuantity()
+	_u.mutation.SetMaximumQuantity(v)
+	return _u
+}
+
+// SetNillableMaximumQuantity sets the "maximum_quantity" field if the given value is not nil.
+func (_u *EntityUpdateOne) SetNillableMaximumQuantity(v *float64) *EntityUpdateOne {
+	if v != nil {
+		_u.SetMaximumQuantity(*v)
+	}
+	return _u
+}
+
+// AddMaximumQuantity adds value to the "maximum_quantity" field.
+func (_u *EntityUpdateOne) AddMaximumQuantity(v float64) *EntityUpdateOne {
+	_u.mutation.AddMaximumQuantity(v)
+	return _u
+}
+
+// ClearMaximumQuantity clears the value of the "maximum_quantity" field.
+func (_u *EntityUpdateOne) ClearMaximumQuantity() *EntityUpdateOne {
+	_u.mutation.ClearMaximumQuantity()
+	return _u
+}
+
+// SetReorderThreshold sets the "reorder_threshold" field.
+func (_u *EntityUpdateOne) SetReorderThreshold(v float64) *EntityUpdateOne {
+	_u.mutation.ResetReorderThreshold()
+	_u.mutation.SetReorderThreshold(v)
+	return _u
+}
+
+// SetNillableReorderThreshold sets the "reorder_threshold" field if the given value is not nil.
+func (_u *EntityUpdateOne) SetNillableReorderThreshold(v *float64) *EntityUpdateOne {
+	if v != nil {
+		_u.SetReorderThreshold(*v)
+	}
+	return _u
+}
+
+// AddReorderThreshold adds value to the "reorder_threshold" field.
+func (_u *EntityUpdateOne) AddReorderThreshold(v float64) *EntityUpdateOne {
+	_u.mutation.AddReorderThreshold(v)
+	return _u
+}
+
+// ClearReorderThreshold clears the value of the "reorder_threshold" field.
+func (_u *EntityUpdateOne) ClearReorderThreshold() *EntityUpdateOne {
+	_u.mutation.ClearReorderThreshold()
 	return _u
 }
 
@@ -2622,6 +2811,33 @@ func (_u *EntityUpdateOne) sqlSave(ctx context.Context) (_node *Entity, err erro
 	}
 	if value, ok := _u.mutation.AddedDefectiveQuantity(); ok {
 		_spec.AddField(entity.FieldDefectiveQuantity, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.MinimumQuantity(); ok {
+		_spec.SetField(entity.FieldMinimumQuantity, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.AddedMinimumQuantity(); ok {
+		_spec.AddField(entity.FieldMinimumQuantity, field.TypeFloat64, value)
+	}
+	if _u.mutation.MinimumQuantityCleared() {
+		_spec.ClearField(entity.FieldMinimumQuantity, field.TypeFloat64)
+	}
+	if value, ok := _u.mutation.MaximumQuantity(); ok {
+		_spec.SetField(entity.FieldMaximumQuantity, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.AddedMaximumQuantity(); ok {
+		_spec.AddField(entity.FieldMaximumQuantity, field.TypeFloat64, value)
+	}
+	if _u.mutation.MaximumQuantityCleared() {
+		_spec.ClearField(entity.FieldMaximumQuantity, field.TypeFloat64)
+	}
+	if value, ok := _u.mutation.ReorderThreshold(); ok {
+		_spec.SetField(entity.FieldReorderThreshold, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.AddedReorderThreshold(); ok {
+		_spec.AddField(entity.FieldReorderThreshold, field.TypeFloat64, value)
+	}
+	if _u.mutation.ReorderThresholdCleared() {
+		_spec.ClearField(entity.FieldReorderThreshold, field.TypeFloat64)
 	}
 	if value, ok := _u.mutation.Insured(); ok {
 		_spec.SetField(entity.FieldInsured, field.TypeBool, value)

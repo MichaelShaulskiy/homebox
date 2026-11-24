@@ -243,6 +243,10 @@ export interface EntEntity {
   lifetime_warranty: boolean;
   /** Manufacturer holds the value of the "manufacturer" field. */
   manufacturer: string;
+  /** MaximumQuantity holds the value of the "maximum_quantity" field. */
+  maximum_quantity: number;
+  /** MinimumQuantity holds the value of the "minimum_quantity" field. */
+  minimum_quantity: number;
   /** ModelNumber holds the value of the "model_number" field. */
   model_number: string;
   /** Name holds the value of the "name" field. */
@@ -257,6 +261,8 @@ export interface EntEntity {
   purchase_price: number;
   /** Quantity holds the value of the "quantity" field. */
   quantity: number;
+  /** ReorderThreshold holds the value of the "reorder_threshold" field. */
+  reorder_threshold: number;
   /** SerialNumber holds the value of the "serial_number" field. */
   serial_number: string;
   /** SoldDate holds the value of the "sold_date" field. */
@@ -1063,6 +1069,8 @@ export interface EntityCreate {
   locationId?: string | null;
   /** @maxLength 255 */
   manufacturer?: string | null;
+  maximumQuantity?: number | null;
+  minimumQuantity?: number | null;
   /**
    * Identifications — optional at create time; populated e.g. by the
    * barcode product-search import flow (#1578).
@@ -1076,6 +1084,7 @@ export interface EntityCreate {
   name: string;
   parentId?: string | null;
   quantity: number;
+  reorderThreshold?: number | null;
   /** Edges */
   tagIds: string[];
 }
@@ -1129,6 +1138,8 @@ export interface EntityOut {
    */
   locationId?: string | null;
   manufacturer: string;
+  maximumQuantity?: number | null;
+  minimumQuantity?: number | null;
   modelNumber: string;
   name: string;
   /** Extras */
@@ -1140,6 +1151,7 @@ export interface EntityOut {
   purchaseFrom: string;
   purchasePrice: number;
   quantity: number;
+  reorderThreshold?: number | null;
   serialNumber: string;
   /** Sold */
   soldDate: Date | string;
@@ -1159,8 +1171,11 @@ export interface EntityPatch {
   entityTypeId?: string | null;
   id: string;
   locationId?: string | null;
+  maximumQuantity?: number | null;
+  minimumQuantity?: number | null;
   parentId?: string | null;
   quantity?: number | null;
+  reorderThreshold?: number | null;
   tagIds?: string[] | null;
 }
 
@@ -1184,11 +1199,14 @@ export interface EntitySummary {
   insured: boolean;
   /** Container-specific (populated when querying locations) */
   itemCount: number;
+  maximumQuantity?: number | null;
+  minimumQuantity?: number | null;
   name: string;
   /** Edges */
   parent?: EntitySummary | null;
   purchasePrice: number;
   quantity: number;
+  reorderThreshold?: number | null;
   /** Sale details */
   soldDate: Date | string;
   tags: TagSummary[];
@@ -1346,6 +1364,8 @@ export interface EntityUpdate {
    */
   locationId?: string | null;
   manufacturer: string;
+  maximumQuantity?: number | null;
+  minimumQuantity?: number | null;
   modelNumber: string;
   /**
    * @minLength 1
@@ -1361,6 +1381,7 @@ export interface EntityUpdate {
   purchaseFrom: string;
   purchasePrice?: number | null;
   quantity: number;
+  reorderThreshold?: number | null;
   /** Identifications */
   serialNumber: string;
   /** Sold */

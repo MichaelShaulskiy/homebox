@@ -98,6 +98,9 @@ type (
 		ParentID     uuid.UUID `json:"parentId"     extensions:"x-nullable"`
 		Name         string    `json:"name"         validate:"required,min=1,max=255"`
 		Quantity     float64   `json:"quantity"`
+		MinimumQuantity   *float64 `json:"minimumQuantity,omitempty"   extensions:"x-nullable,x-omitempty"`
+		MaximumQuantity   *float64 `json:"maximumQuantity,omitempty"   extensions:"x-nullable,x-omitempty"`
+		ReorderThreshold  *float64 `json:"reorderThreshold,omitempty"  extensions:"x-nullable,x-omitempty"`
 		Description  string    `json:"description"  validate:"max=1000"`
 		AssetID      AssetID   `json:"-"`
 		EntityTypeID uuid.UUID `json:"entityTypeId" extensions:"x-nullable,x-omitempty"`
@@ -136,6 +139,9 @@ type (
 		Fields        []EntityFieldData `json:"fields"`
 		AssetID       AssetID           `json:"assetId"       swaggertype:"string"`
 		Quantity      float64           `json:"quantity"`
+		MinimumQuantity  *float64 `json:"minimumQuantity,omitempty"  extensions:"x-nullable,x-omitempty"`
+		MaximumQuantity  *float64 `json:"maximumQuantity,omitempty"  extensions:"x-nullable,x-omitempty"`
+		ReorderThreshold *float64 `json:"reorderThreshold,omitempty" extensions:"x-nullable,x-omitempty"`
 		PurchasePrice float64           `json:"purchasePrice" extensions:"x-nullable,x-omitempty"`
 		SoldPrice     float64           `json:"soldPrice"     extensions:"x-nullable,x-omitempty"`
 		ParentID      uuid.UUID         `json:"parentId"      extensions:"x-nullable,x-omitempty"`
@@ -154,6 +160,9 @@ type (
 	EntityPatch struct {
 		ID           uuid.UUID   `json:"id"`
 		Quantity     *float64    `json:"quantity,omitempty" extensions:"x-nullable,x-omitempty"`
+		MinimumQuantity  *float64 `json:"minimumQuantity,omitempty"  extensions:"x-nullable,x-omitempty"`
+		MaximumQuantity  *float64 `json:"maximumQuantity,omitempty"  extensions:"x-nullable,x-omitempty"`
+		ReorderThreshold *float64 `json:"reorderThreshold,omitempty" extensions:"x-nullable,x-omitempty"`
 		ImportRef    *string     `json:"-"                  extensions:"x-nullable,x-omitempty"`
 		ParentID     uuid.UUID   `json:"parentId"           extensions:"x-nullable,x-omitempty"`
 		LocationID   uuid.UUID   `json:"locationId"         extensions:"x-nullable,x-omitempty"`
@@ -170,6 +179,9 @@ type (
 		Quantity          float64   `json:"quantity"`
 		AvailableQuantity float64   `json:"availableQuantity"`
 		DefectiveQuantity float64   `json:"defectiveQuantity"`
+		MinimumQuantity   *float64  `json:"minimumQuantity,omitempty"   extensions:"x-nullable,x-omitempty"`
+		MaximumQuantity   *float64  `json:"maximumQuantity,omitempty"   extensions:"x-nullable,x-omitempty"`
+		ReorderThreshold  *float64  `json:"reorderThreshold,omitempty"  extensions:"x-nullable,x-omitempty"`
 		Insured           bool      `json:"insured"`
 		Archived          bool      `json:"archived"`
 		CreatedAt         time.Time `json:"createdAt"`
@@ -282,6 +294,9 @@ func mapEntitySummary(e *ent.Entity) EntitySummary {
 		Quantity:          e.Quantity,
 		AvailableQuantity: e.AvailableQuantity,
 		DefectiveQuantity: e.DefectiveQuantity,
+		MinimumQuantity:   e.MinimumQuantity,
+		MaximumQuantity:   e.MaximumQuantity,
+		ReorderThreshold:  e.ReorderThreshold,
 		CreatedAt:         e.CreatedAt,
 		UpdatedAt:         e.UpdatedAt,
 		Archived:          e.Archived,
@@ -1259,6 +1274,27 @@ func validateQuantity(op string, quantity float64) error {
 	return nil
 }
 
+func validateStockThresholds(op string, minimum, maximum, reorder *float64) error {
+	for name, value := range map[string]*float64{
+		"minimum quantity": minimum,
+		"maximum quantity": maximum,
+		"reorder threshold": reorder,
+	} {
+		if value != nil {
+			if err := validateQuantity(op+" "+name, *value); err != nil {
+				return err
+			}
+		}
+	}
+	if minimum != nil && maximum != nil && *minimum > *maximum {
+		return fmt.Errorf("%s: minimum quantity must not exceed maximum quantity", op)
+	}
+	if reorder != nil && maximum != nil && *reorder > *maximum {
+		return fmt.Errorf("%s: reorder threshold must not exceed maximum quantity", op)
+	}
+	return nil
+}
+
 func (r *EntityRepository) Create(ctx context.Context, gid uuid.UUID, data EntityCreate) (EntityOut, error) {
 	ctx, span := entityTracer().Start(ctx, "repo.EntityRepository.Create",
 		trace.WithAttributes(
@@ -1273,6 +1309,10 @@ func (r *EntityRepository) Create(ctx context.Context, gid uuid.UUID, data Entit
 	defer span.End()
 
 	if err := validateQuantity("create entity", data.Quantity); err != nil {
+		recordSpanError(span, err)
+		return EntityOut{}, err
+	}
+	if err := validateStockThresholds("create entity", data.MinimumQuantity, data.MaximumQuantity, data.ReorderThreshold); err != nil {
 		recordSpanError(span, err)
 		return EntityOut{}, err
 	}
@@ -1310,6 +1350,9 @@ func (r *EntityRepository) Create(ctx context.Context, gid uuid.UUID, data Entit
 		SetManufacturer(data.Manufacturer).
 		SetGroupID(gid).
 		SetAssetID(int64(data.AssetID))
+	q.SetNillableMinimumQuantity(data.MinimumQuantity)
+	q.SetNillableMaximumQuantity(data.MaximumQuantity)
+	q.SetNillableReorderThreshold(data.ReorderThreshold)
 
 	if parentID != uuid.Nil {
 		q.SetParentID(parentID)
@@ -1786,6 +1829,22 @@ func (r *EntityRepository) UpdateByGroup(ctx context.Context, gid uuid.UUID, dat
 		recordSpanError(span, err)
 		return EntityOut{}, err
 	}
+	minimum := existingStock.MinimumQuantity
+	if data.MinimumQuantity != nil {
+		minimum = data.MinimumQuantity
+	}
+	maximum := existingStock.MaximumQuantity
+	if data.MaximumQuantity != nil {
+		maximum = data.MaximumQuantity
+	}
+	reorder := existingStock.ReorderThreshold
+	if data.ReorderThreshold != nil {
+		reorder = data.ReorderThreshold
+	}
+	if err := validateStockThresholds("update entity", minimum, maximum, reorder); err != nil {
+		recordSpanError(span, err)
+		return EntityOut{}, err
+	}
 	nextAvailable := existingStock.AvailableQuantity + (data.Quantity - existingStock.Quantity)
 	if nextAvailable < 0 {
 		err = fmt.Errorf("quantity cannot be reduced below issued stock")
@@ -1854,6 +1913,15 @@ func (r *EntityRepository) UpdateByGroup(ctx context.Context, gid uuid.UUID, dat
 		SetAvailableQuantity(nextAvailable).
 		SetAssetID(int64(data.AssetID)).
 		SetSyncChildEntityLocations(data.SyncChildEntityLocations)
+	if data.MinimumQuantity != nil {
+		q.SetNillableMinimumQuantity(data.MinimumQuantity)
+	}
+	if data.MaximumQuantity != nil {
+		q.SetNillableMaximumQuantity(data.MaximumQuantity)
+	}
+	if data.ReorderThreshold != nil {
+		q.SetNillableReorderThreshold(data.ReorderThreshold)
+	}
 
 	// Date fields are nullable. Writing types.Date{}.Time() would persist
 	// the 0001-01-01 sentinel that ZeroOutTimeFields then has to chase —
@@ -2192,6 +2260,41 @@ func (r *EntityRepository) Patch(ctx context.Context, gid, id uuid.UUID, data En
 			return err
 		}
 		q.SetQuantity(*data.Quantity).SetAvailableQuantity(nextAvailable)
+	}
+
+	if data.MinimumQuantity != nil || data.MaximumQuantity != nil || data.ReorderThreshold != nil {
+		current, err := tx.Entity.Query().
+			Where(entity.ID(id), entity.HasGroupWith(group.ID(gid))).
+			Only(ctx)
+		if err != nil {
+			recordSpanError(span, err)
+			return err
+		}
+		minimum := current.MinimumQuantity
+		if data.MinimumQuantity != nil {
+			minimum = data.MinimumQuantity
+		}
+		maximum := current.MaximumQuantity
+		if data.MaximumQuantity != nil {
+			maximum = data.MaximumQuantity
+		}
+		reorder := current.ReorderThreshold
+		if data.ReorderThreshold != nil {
+			reorder = data.ReorderThreshold
+		}
+		if err := validateStockThresholds("patch entity", minimum, maximum, reorder); err != nil {
+			recordSpanError(span, err)
+			return err
+		}
+		if data.MinimumQuantity != nil {
+			q.SetNillableMinimumQuantity(data.MinimumQuantity)
+		}
+		if data.MaximumQuantity != nil {
+			q.SetNillableMaximumQuantity(data.MaximumQuantity)
+		}
+		if data.ReorderThreshold != nil {
+			q.SetNillableReorderThreshold(data.ReorderThreshold)
+		}
 	}
 
 	switch {

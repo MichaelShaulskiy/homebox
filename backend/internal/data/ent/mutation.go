@@ -2635,6 +2635,12 @@ type EntityMutation struct {
 	addavailable_quantity         *float64
 	defective_quantity            *float64
 	adddefective_quantity         *float64
+	minimum_quantity              *float64
+	addminimum_quantity           *float64
+	maximum_quantity              *float64
+	addmaximum_quantity           *float64
+	reorder_threshold             *float64
+	addreorder_threshold          *float64
 	insured                       *bool
 	archived                      *bool
 	asset_id                      *int64
@@ -3218,6 +3224,216 @@ func (m *EntityMutation) AddedDefectiveQuantity() (r float64, exists bool) {
 func (m *EntityMutation) ResetDefectiveQuantity() {
 	m.defective_quantity = nil
 	m.adddefective_quantity = nil
+}
+
+// SetMinimumQuantity sets the "minimum_quantity" field.
+func (m *EntityMutation) SetMinimumQuantity(f float64) {
+	m.minimum_quantity = &f
+	m.addminimum_quantity = nil
+}
+
+// MinimumQuantity returns the value of the "minimum_quantity" field in the mutation.
+func (m *EntityMutation) MinimumQuantity() (r float64, exists bool) {
+	v := m.minimum_quantity
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMinimumQuantity returns the old "minimum_quantity" field's value of the Entity entity.
+// If the Entity object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *EntityMutation) OldMinimumQuantity(ctx context.Context) (v *float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMinimumQuantity is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMinimumQuantity requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMinimumQuantity: %w", err)
+	}
+	return oldValue.MinimumQuantity, nil
+}
+
+// AddMinimumQuantity adds f to the "minimum_quantity" field.
+func (m *EntityMutation) AddMinimumQuantity(f float64) {
+	if m.addminimum_quantity != nil {
+		*m.addminimum_quantity += f
+	} else {
+		m.addminimum_quantity = &f
+	}
+}
+
+// AddedMinimumQuantity returns the value that was added to the "minimum_quantity" field in this mutation.
+func (m *EntityMutation) AddedMinimumQuantity() (r float64, exists bool) {
+	v := m.addminimum_quantity
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearMinimumQuantity clears the value of the "minimum_quantity" field.
+func (m *EntityMutation) ClearMinimumQuantity() {
+	m.minimum_quantity = nil
+	m.addminimum_quantity = nil
+	m.clearedFields[entity.FieldMinimumQuantity] = struct{}{}
+}
+
+// MinimumQuantityCleared returns if the "minimum_quantity" field was cleared in this mutation.
+func (m *EntityMutation) MinimumQuantityCleared() bool {
+	_, ok := m.clearedFields[entity.FieldMinimumQuantity]
+	return ok
+}
+
+// ResetMinimumQuantity resets all changes to the "minimum_quantity" field.
+func (m *EntityMutation) ResetMinimumQuantity() {
+	m.minimum_quantity = nil
+	m.addminimum_quantity = nil
+	delete(m.clearedFields, entity.FieldMinimumQuantity)
+}
+
+// SetMaximumQuantity sets the "maximum_quantity" field.
+func (m *EntityMutation) SetMaximumQuantity(f float64) {
+	m.maximum_quantity = &f
+	m.addmaximum_quantity = nil
+}
+
+// MaximumQuantity returns the value of the "maximum_quantity" field in the mutation.
+func (m *EntityMutation) MaximumQuantity() (r float64, exists bool) {
+	v := m.maximum_quantity
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMaximumQuantity returns the old "maximum_quantity" field's value of the Entity entity.
+// If the Entity object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *EntityMutation) OldMaximumQuantity(ctx context.Context) (v *float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMaximumQuantity is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMaximumQuantity requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMaximumQuantity: %w", err)
+	}
+	return oldValue.MaximumQuantity, nil
+}
+
+// AddMaximumQuantity adds f to the "maximum_quantity" field.
+func (m *EntityMutation) AddMaximumQuantity(f float64) {
+	if m.addmaximum_quantity != nil {
+		*m.addmaximum_quantity += f
+	} else {
+		m.addmaximum_quantity = &f
+	}
+}
+
+// AddedMaximumQuantity returns the value that was added to the "maximum_quantity" field in this mutation.
+func (m *EntityMutation) AddedMaximumQuantity() (r float64, exists bool) {
+	v := m.addmaximum_quantity
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearMaximumQuantity clears the value of the "maximum_quantity" field.
+func (m *EntityMutation) ClearMaximumQuantity() {
+	m.maximum_quantity = nil
+	m.addmaximum_quantity = nil
+	m.clearedFields[entity.FieldMaximumQuantity] = struct{}{}
+}
+
+// MaximumQuantityCleared returns if the "maximum_quantity" field was cleared in this mutation.
+func (m *EntityMutation) MaximumQuantityCleared() bool {
+	_, ok := m.clearedFields[entity.FieldMaximumQuantity]
+	return ok
+}
+
+// ResetMaximumQuantity resets all changes to the "maximum_quantity" field.
+func (m *EntityMutation) ResetMaximumQuantity() {
+	m.maximum_quantity = nil
+	m.addmaximum_quantity = nil
+	delete(m.clearedFields, entity.FieldMaximumQuantity)
+}
+
+// SetReorderThreshold sets the "reorder_threshold" field.
+func (m *EntityMutation) SetReorderThreshold(f float64) {
+	m.reorder_threshold = &f
+	m.addreorder_threshold = nil
+}
+
+// ReorderThreshold returns the value of the "reorder_threshold" field in the mutation.
+func (m *EntityMutation) ReorderThreshold() (r float64, exists bool) {
+	v := m.reorder_threshold
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldReorderThreshold returns the old "reorder_threshold" field's value of the Entity entity.
+// If the Entity object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *EntityMutation) OldReorderThreshold(ctx context.Context) (v *float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldReorderThreshold is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldReorderThreshold requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldReorderThreshold: %w", err)
+	}
+	return oldValue.ReorderThreshold, nil
+}
+
+// AddReorderThreshold adds f to the "reorder_threshold" field.
+func (m *EntityMutation) AddReorderThreshold(f float64) {
+	if m.addreorder_threshold != nil {
+		*m.addreorder_threshold += f
+	} else {
+		m.addreorder_threshold = &f
+	}
+}
+
+// AddedReorderThreshold returns the value that was added to the "reorder_threshold" field in this mutation.
+func (m *EntityMutation) AddedReorderThreshold() (r float64, exists bool) {
+	v := m.addreorder_threshold
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearReorderThreshold clears the value of the "reorder_threshold" field.
+func (m *EntityMutation) ClearReorderThreshold() {
+	m.reorder_threshold = nil
+	m.addreorder_threshold = nil
+	m.clearedFields[entity.FieldReorderThreshold] = struct{}{}
+}
+
+// ReorderThresholdCleared returns if the "reorder_threshold" field was cleared in this mutation.
+func (m *EntityMutation) ReorderThresholdCleared() bool {
+	_, ok := m.clearedFields[entity.FieldReorderThreshold]
+	return ok
+}
+
+// ResetReorderThreshold resets all changes to the "reorder_threshold" field.
+func (m *EntityMutation) ResetReorderThreshold() {
+	m.reorder_threshold = nil
+	m.addreorder_threshold = nil
+	delete(m.clearedFields, entity.FieldReorderThreshold)
 }
 
 // SetInsured sets the "insured" field.
@@ -4644,7 +4860,7 @@ func (m *EntityMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *EntityMutation) Fields() []string {
-	fields := make([]string, 0, 26)
+	fields := make([]string, 0, 29)
 	if m.created_at != nil {
 		fields = append(fields, entity.FieldCreatedAt)
 	}
@@ -4671,6 +4887,15 @@ func (m *EntityMutation) Fields() []string {
 	}
 	if m.defective_quantity != nil {
 		fields = append(fields, entity.FieldDefectiveQuantity)
+	}
+	if m.minimum_quantity != nil {
+		fields = append(fields, entity.FieldMinimumQuantity)
+	}
+	if m.maximum_quantity != nil {
+		fields = append(fields, entity.FieldMaximumQuantity)
+	}
+	if m.reorder_threshold != nil {
+		fields = append(fields, entity.FieldReorderThreshold)
 	}
 	if m.insured != nil {
 		fields = append(fields, entity.FieldInsured)
@@ -4749,6 +4974,12 @@ func (m *EntityMutation) Field(name string) (ent.Value, bool) {
 		return m.AvailableQuantity()
 	case entity.FieldDefectiveQuantity:
 		return m.DefectiveQuantity()
+	case entity.FieldMinimumQuantity:
+		return m.MinimumQuantity()
+	case entity.FieldMaximumQuantity:
+		return m.MaximumQuantity()
+	case entity.FieldReorderThreshold:
+		return m.ReorderThreshold()
 	case entity.FieldInsured:
 		return m.Insured()
 	case entity.FieldArchived:
@@ -4810,6 +5041,12 @@ func (m *EntityMutation) OldField(ctx context.Context, name string) (ent.Value, 
 		return m.OldAvailableQuantity(ctx)
 	case entity.FieldDefectiveQuantity:
 		return m.OldDefectiveQuantity(ctx)
+	case entity.FieldMinimumQuantity:
+		return m.OldMinimumQuantity(ctx)
+	case entity.FieldMaximumQuantity:
+		return m.OldMaximumQuantity(ctx)
+	case entity.FieldReorderThreshold:
+		return m.OldReorderThreshold(ctx)
 	case entity.FieldInsured:
 		return m.OldInsured(ctx)
 	case entity.FieldArchived:
@@ -4915,6 +5152,27 @@ func (m *EntityMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetDefectiveQuantity(v)
+		return nil
+	case entity.FieldMinimumQuantity:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMinimumQuantity(v)
+		return nil
+	case entity.FieldMaximumQuantity:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMaximumQuantity(v)
+		return nil
+	case entity.FieldReorderThreshold:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetReorderThreshold(v)
 		return nil
 	case entity.FieldInsured:
 		v, ok := value.(bool)
@@ -5052,6 +5310,15 @@ func (m *EntityMutation) AddedFields() []string {
 	if m.adddefective_quantity != nil {
 		fields = append(fields, entity.FieldDefectiveQuantity)
 	}
+	if m.addminimum_quantity != nil {
+		fields = append(fields, entity.FieldMinimumQuantity)
+	}
+	if m.addmaximum_quantity != nil {
+		fields = append(fields, entity.FieldMaximumQuantity)
+	}
+	if m.addreorder_threshold != nil {
+		fields = append(fields, entity.FieldReorderThreshold)
+	}
 	if m.addasset_id != nil {
 		fields = append(fields, entity.FieldAssetID)
 	}
@@ -5075,6 +5342,12 @@ func (m *EntityMutation) AddedField(name string) (ent.Value, bool) {
 		return m.AddedAvailableQuantity()
 	case entity.FieldDefectiveQuantity:
 		return m.AddedDefectiveQuantity()
+	case entity.FieldMinimumQuantity:
+		return m.AddedMinimumQuantity()
+	case entity.FieldMaximumQuantity:
+		return m.AddedMaximumQuantity()
+	case entity.FieldReorderThreshold:
+		return m.AddedReorderThreshold()
 	case entity.FieldAssetID:
 		return m.AddedAssetID()
 	case entity.FieldPurchasePrice:
@@ -5110,6 +5383,27 @@ func (m *EntityMutation) AddField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.AddDefectiveQuantity(v)
+		return nil
+	case entity.FieldMinimumQuantity:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddMinimumQuantity(v)
+		return nil
+	case entity.FieldMaximumQuantity:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddMaximumQuantity(v)
+		return nil
+	case entity.FieldReorderThreshold:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddReorderThreshold(v)
 		return nil
 	case entity.FieldAssetID:
 		v, ok := value.(int64)
@@ -5148,6 +5442,15 @@ func (m *EntityMutation) ClearedFields() []string {
 	}
 	if m.FieldCleared(entity.FieldNotes) {
 		fields = append(fields, entity.FieldNotes)
+	}
+	if m.FieldCleared(entity.FieldMinimumQuantity) {
+		fields = append(fields, entity.FieldMinimumQuantity)
+	}
+	if m.FieldCleared(entity.FieldMaximumQuantity) {
+		fields = append(fields, entity.FieldMaximumQuantity)
+	}
+	if m.FieldCleared(entity.FieldReorderThreshold) {
+		fields = append(fields, entity.FieldReorderThreshold)
 	}
 	if m.FieldCleared(entity.FieldSerialNumber) {
 		fields = append(fields, entity.FieldSerialNumber)
@@ -5201,6 +5504,15 @@ func (m *EntityMutation) ClearField(name string) error {
 		return nil
 	case entity.FieldNotes:
 		m.ClearNotes()
+		return nil
+	case entity.FieldMinimumQuantity:
+		m.ClearMinimumQuantity()
+		return nil
+	case entity.FieldMaximumQuantity:
+		m.ClearMaximumQuantity()
+		return nil
+	case entity.FieldReorderThreshold:
+		m.ClearReorderThreshold()
 		return nil
 	case entity.FieldSerialNumber:
 		m.ClearSerialNumber()
@@ -5266,6 +5578,15 @@ func (m *EntityMutation) ResetField(name string) error {
 		return nil
 	case entity.FieldDefectiveQuantity:
 		m.ResetDefectiveQuantity()
+		return nil
+	case entity.FieldMinimumQuantity:
+		m.ResetMinimumQuantity()
+		return nil
+	case entity.FieldMaximumQuantity:
+		m.ResetMaximumQuantity()
+		return nil
+	case entity.FieldReorderThreshold:
+		m.ResetReorderThreshold()
 		return nil
 	case entity.FieldInsured:
 		m.ResetInsured()

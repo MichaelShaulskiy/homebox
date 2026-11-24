@@ -48,6 +48,15 @@ func (Entity) Fields() []ent.Field {
 			Default(1),
 		field.Float("defective_quantity").
 			Default(0),
+		field.Float("minimum_quantity").
+			Optional().
+			Nillable(),
+		field.Float("maximum_quantity").
+			Optional().
+			Nillable(),
+		field.Float("reorder_threshold").
+			Optional().
+			Nillable(),
 		field.Bool("insured").
 			Default(false),
 		field.Bool("archived").

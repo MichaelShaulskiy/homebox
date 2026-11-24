@@ -33,6 +33,12 @@ const (
 	FieldAvailableQuantity = "available_quantity"
 	// FieldDefectiveQuantity holds the string denoting the defective_quantity field in the database.
 	FieldDefectiveQuantity = "defective_quantity"
+	// FieldMinimumQuantity holds the string denoting the minimum_quantity field in the database.
+	FieldMinimumQuantity = "minimum_quantity"
+	// FieldMaximumQuantity holds the string denoting the maximum_quantity field in the database.
+	FieldMaximumQuantity = "maximum_quantity"
+	// FieldReorderThreshold holds the string denoting the reorder_threshold field in the database.
+	FieldReorderThreshold = "reorder_threshold"
 	// FieldInsured holds the string denoting the insured field in the database.
 	FieldInsured = "insured"
 	// FieldArchived holds the string denoting the archived field in the database.
@@ -177,6 +183,9 @@ var Columns = []string{
 	FieldQuantity,
 	FieldAvailableQuantity,
 	FieldDefectiveQuantity,
+	FieldMinimumQuantity,
+	FieldMaximumQuantity,
+	FieldReorderThreshold,
 	FieldInsured,
 	FieldArchived,
 	FieldAssetID,
@@ -326,6 +335,21 @@ func ByAvailableQuantity(opts ...sql.OrderTermOption) OrderOption {
 // ByDefectiveQuantity orders the results by the defective_quantity field.
 func ByDefectiveQuantity(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldDefectiveQuantity, opts...).ToFunc()
+}
+
+// ByMinimumQuantity orders the results by the minimum_quantity field.
+func ByMinimumQuantity(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldMinimumQuantity, opts...).ToFunc()
+}
+
+// ByMaximumQuantity orders the results by the maximum_quantity field.
+func ByMaximumQuantity(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldMaximumQuantity, opts...).ToFunc()
+}
+
+// ByReorderThreshold orders the results by the reorder_threshold field.
+func ByReorderThreshold(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldReorderThreshold, opts...).ToFunc()
 }
 
 // ByInsured orders the results by the insured field.

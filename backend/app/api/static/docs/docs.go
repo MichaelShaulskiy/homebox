@@ -4808,6 +4808,14 @@ const docTemplate = `{
                     "description": "Manufacturer holds the value of the \"manufacturer\" field.",
                     "type": "string"
                 },
+                "maximum_quantity": {
+                    "description": "MaximumQuantity holds the value of the \"maximum_quantity\" field.",
+                    "type": "number"
+                },
+                "minimum_quantity": {
+                    "description": "MinimumQuantity holds the value of the \"minimum_quantity\" field.",
+                    "type": "number"
+                },
                 "model_number": {
                     "description": "ModelNumber holds the value of the \"model_number\" field.",
                     "type": "string"
@@ -4834,6 +4842,10 @@ const docTemplate = `{
                 },
                 "quantity": {
                     "description": "Quantity holds the value of the \"quantity\" field.",
+                    "type": "number"
+                },
+                "reorder_threshold": {
+                    "description": "ReorderThreshold holds the value of the \"reorder_threshold\" field.",
                     "type": "number"
                 },
                 "serial_number": {
@@ -6744,6 +6756,16 @@ const docTemplate = `{
                     "x-nullable": true,
                     "x-omitempty": true
                 },
+                "maximumQuantity": {
+                    "type": "number",
+                    "x-nullable": true,
+                    "x-omitempty": true
+                },
+                "minimumQuantity": {
+                    "type": "number",
+                    "x-nullable": true,
+                    "x-omitempty": true
+                },
                 "modelNumber": {
                     "description": "Identifications — optional at create time; populated e.g. by the\nbarcode product-search import flow (#1578).",
                     "type": "string",
@@ -6762,6 +6784,11 @@ const docTemplate = `{
                 },
                 "quantity": {
                     "type": "number"
+                },
+                "reorderThreshold": {
+                    "type": "number",
+                    "x-nullable": true,
+                    "x-omitempty": true
                 },
                 "tagIds": {
                     "description": "Edges",
@@ -6906,6 +6933,16 @@ const docTemplate = `{
                 "manufacturer": {
                     "type": "string"
                 },
+                "maximumQuantity": {
+                    "type": "number",
+                    "x-nullable": true,
+                    "x-omitempty": true
+                },
+                "minimumQuantity": {
+                    "type": "number",
+                    "x-nullable": true,
+                    "x-omitempty": true
+                },
                 "modelNumber": {
                     "type": "string"
                 },
@@ -6938,6 +6975,11 @@ const docTemplate = `{
                 },
                 "quantity": {
                     "type": "number"
+                },
+                "reorderThreshold": {
+                    "type": "number",
+                    "x-nullable": true,
+                    "x-omitempty": true
                 },
                 "serialNumber": {
                     "type": "string"
@@ -6999,12 +7041,27 @@ const docTemplate = `{
                     "x-nullable": true,
                     "x-omitempty": true
                 },
+                "maximumQuantity": {
+                    "type": "number",
+                    "x-nullable": true,
+                    "x-omitempty": true
+                },
+                "minimumQuantity": {
+                    "type": "number",
+                    "x-nullable": true,
+                    "x-omitempty": true
+                },
                 "parentId": {
                     "type": "string",
                     "x-nullable": true,
                     "x-omitempty": true
                 },
                 "quantity": {
+                    "type": "number",
+                    "x-nullable": true,
+                    "x-omitempty": true
+                },
+                "reorderThreshold": {
                     "type": "number",
                     "x-nullable": true,
                     "x-omitempty": true
@@ -7090,6 +7147,16 @@ const docTemplate = `{
                     "description": "Container-specific (populated when querying locations)",
                     "type": "number"
                 },
+                "maximumQuantity": {
+                    "type": "number",
+                    "x-nullable": true,
+                    "x-omitempty": true
+                },
+                "minimumQuantity": {
+                    "type": "number",
+                    "x-nullable": true,
+                    "x-omitempty": true
+                },
                 "name": {
                     "type": "string"
                 },
@@ -7108,6 +7175,11 @@ const docTemplate = `{
                 },
                 "quantity": {
                     "type": "number"
+                },
+                "reorderThreshold": {
+                    "type": "number",
+                    "x-nullable": true,
+                    "x-omitempty": true
                 },
                 "soldDate": {
                     "description": "Sale details",
@@ -7518,6 +7590,16 @@ const docTemplate = `{
                 "manufacturer": {
                     "type": "string"
                 },
+                "maximumQuantity": {
+                    "type": "number",
+                    "x-nullable": true,
+                    "x-omitempty": true
+                },
+                "minimumQuantity": {
+                    "type": "number",
+                    "x-nullable": true,
+                    "x-omitempty": true
+                },
                 "modelNumber": {
                     "type": "string"
                 },
@@ -7550,6 +7632,11 @@ const docTemplate = `{
                 },
                 "quantity": {
                     "type": "number"
+                },
+                "reorderThreshold": {
+                    "type": "number",
+                    "x-nullable": true,
+                    "x-omitempty": true
                 },
                 "serialNumber": {
                     "description": "Identifications",

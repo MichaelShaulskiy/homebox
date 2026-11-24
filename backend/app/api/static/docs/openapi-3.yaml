@@ -3101,6 +3101,12 @@ components:
         manufacturer:
           description: Manufacturer holds the value of the "manufacturer" field.
           type: string
+        maximum_quantity:
+          description: MaximumQuantity holds the value of the "maximum_quantity" field.
+          type: number
+        minimum_quantity:
+          description: MinimumQuantity holds the value of the "minimum_quantity" field.
+          type: number
         model_number:
           description: ModelNumber holds the value of the "model_number" field.
           type: string
@@ -3121,6 +3127,9 @@ components:
           type: number
         quantity:
           description: Quantity holds the value of the "quantity" field.
+          type: number
+        reorder_threshold:
+          description: ReorderThreshold holds the value of the "reorder_threshold" field.
           type: number
         serial_number:
           description: SerialNumber holds the value of the "serial_number" field.
@@ -4472,6 +4481,14 @@ components:
           maxLength: 255
           x-omitempty: true
           nullable: true
+        maximumQuantity:
+          type: number
+          x-omitempty: true
+          nullable: true
+        minimumQuantity:
+          type: number
+          x-omitempty: true
+          nullable: true
         modelNumber:
           description: |-
             Identifications — optional at create time; populated e.g. by the
@@ -4489,6 +4506,10 @@ components:
           nullable: true
         quantity:
           type: number
+        reorderThreshold:
+          type: number
+          x-omitempty: true
+          nullable: true
         tagIds:
           description: Edges
           type: array
@@ -4594,6 +4615,14 @@ components:
           nullable: true
         manufacturer:
           type: string
+        maximumQuantity:
+          type: number
+          x-omitempty: true
+          nullable: true
+        minimumQuantity:
+          type: number
+          x-omitempty: true
+          nullable: true
         modelNumber:
           type: string
         name:
@@ -4616,6 +4645,10 @@ components:
           type: number
         quantity:
           type: number
+        reorderThreshold:
+          type: number
+          x-omitempty: true
+          nullable: true
         serialNumber:
           type: string
         soldDate:
@@ -4658,11 +4691,23 @@ components:
           type: string
           x-omitempty: true
           nullable: true
+        maximumQuantity:
+          type: number
+          x-omitempty: true
+          nullable: true
+        minimumQuantity:
+          type: number
+          x-omitempty: true
+          nullable: true
         parentId:
           type: string
           x-omitempty: true
           nullable: true
         quantity:
+          type: number
+          x-omitempty: true
+          nullable: true
+        reorderThreshold:
           type: number
           x-omitempty: true
           nullable: true
@@ -4721,6 +4766,14 @@ components:
         itemCount:
           description: Container-specific (populated when querying locations)
           type: number
+        maximumQuantity:
+          type: number
+          x-omitempty: true
+          nullable: true
+        minimumQuantity:
+          type: number
+          x-omitempty: true
+          nullable: true
         name:
           type: string
         parent:
@@ -4733,6 +4786,10 @@ components:
           type: number
         quantity:
           type: number
+        reorderThreshold:
+          type: number
+          x-omitempty: true
+          nullable: true
         soldDate:
           description: Sale details
           type: string
@@ -5024,6 +5081,14 @@ components:
           nullable: true
         manufacturer:
           type: string
+        maximumQuantity:
+          type: number
+          x-omitempty: true
+          nullable: true
+        minimumQuantity:
+          type: number
+          x-omitempty: true
+          nullable: true
         modelNumber:
           type: string
         name:
@@ -5049,6 +5114,10 @@ components:
           nullable: true
         quantity:
           type: number
+        reorderThreshold:
+          type: number
+          x-omitempty: true
+          nullable: true
         serialNumber:
           description: Identifications
           type: string

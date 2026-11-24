@@ -38,6 +38,12 @@ type Entity struct {
 	AvailableQuantity float64 `json:"available_quantity,omitempty"`
 	// DefectiveQuantity holds the value of the "defective_quantity" field.
 	DefectiveQuantity float64 `json:"defective_quantity,omitempty"`
+	// MinimumQuantity holds the value of the "minimum_quantity" field.
+	MinimumQuantity *float64 `json:"minimum_quantity,omitempty"`
+	// MaximumQuantity holds the value of the "maximum_quantity" field.
+	MaximumQuantity *float64 `json:"maximum_quantity,omitempty"`
+	// ReorderThreshold holds the value of the "reorder_threshold" field.
+	ReorderThreshold *float64 `json:"reorder_threshold,omitempty"`
 	// Insured holds the value of the "insured" field.
 	Insured bool `json:"insured,omitempty"`
 	// Archived holds the value of the "archived" field.
@@ -236,7 +242,7 @@ func (*Entity) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case entity.FieldInsured, entity.FieldArchived, entity.FieldSyncChildEntityLocations, entity.FieldLifetimeWarranty:
 			values[i] = new(sql.NullBool)
-		case entity.FieldQuantity, entity.FieldAvailableQuantity, entity.FieldDefectiveQuantity, entity.FieldPurchasePrice, entity.FieldSoldPrice:
+		case entity.FieldQuantity, entity.FieldAvailableQuantity, entity.FieldDefectiveQuantity, entity.FieldMinimumQuantity, entity.FieldMaximumQuantity, entity.FieldReorderThreshold, entity.FieldPurchasePrice, entity.FieldSoldPrice:
 			values[i] = new(sql.NullFloat64)
 		case entity.FieldAssetID:
 			values[i] = new(sql.NullInt64)
@@ -328,6 +334,27 @@ func (_m *Entity) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field defective_quantity", values[i])
 			} else if value.Valid {
 				_m.DefectiveQuantity = value.Float64
+			}
+		case entity.FieldMinimumQuantity:
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
+				return fmt.Errorf("unexpected type %T for field minimum_quantity", values[i])
+			} else if value.Valid {
+				_m.MinimumQuantity = new(float64)
+				*_m.MinimumQuantity = value.Float64
+			}
+		case entity.FieldMaximumQuantity:
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
+				return fmt.Errorf("unexpected type %T for field maximum_quantity", values[i])
+			} else if value.Valid {
+				_m.MaximumQuantity = new(float64)
+				*_m.MaximumQuantity = value.Float64
+			}
+		case entity.FieldReorderThreshold:
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
+				return fmt.Errorf("unexpected type %T for field reorder_threshold", values[i])
+			} else if value.Valid {
+				_m.ReorderThreshold = new(float64)
+				*_m.ReorderThreshold = value.Float64
 			}
 		case entity.FieldInsured:
 			if value, ok := values[i].(*sql.NullBool); !ok {
@@ -581,6 +608,21 @@ func (_m *Entity) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("defective_quantity=")
 	builder.WriteString(fmt.Sprintf("%v", _m.DefectiveQuantity))
+	builder.WriteString(", ")
+	if v := _m.MinimumQuantity; v != nil {
+		builder.WriteString("minimum_quantity=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := _m.MaximumQuantity; v != nil {
+		builder.WriteString("maximum_quantity=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := _m.ReorderThreshold; v != nil {
+		builder.WriteString("reorder_threshold=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteString(", ")
 	builder.WriteString("insured=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Insured))

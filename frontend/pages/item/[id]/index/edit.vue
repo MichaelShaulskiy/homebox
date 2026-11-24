@@ -45,6 +45,10 @@
   const route = useRoute();
   const api = useUserApi();
   const preferences = useViewPreferences();
+  const auth = useAuthContext();
+  const canConfigureStock = computed(
+    () => auth.user?.accountRole === "superadmin" || auth.user?.isSuperuser
+  );
 
   const entityTypeStore = useEntityTypeStore();
 
@@ -766,6 +770,35 @@
                   inline
                 />
               </div>
+            </div>
+          </div>
+          <div v-if="canConfigureStock" class="border-t px-4 pb-4 pt-2 sm:px-6">
+            <h3 class="mb-3 font-medium">{{ $t("items.stock_limits") }}</h3>
+            <div class="grid gap-3 sm:grid-cols-3">
+              <FormTextField
+                :model-value="item.minimumQuantity ?? undefined"
+                @update:model-value="item.minimumQuantity = $event == null ? null : Number($event)"
+                type="number"
+                step="any"
+                :min="0"
+                :label="$t('items.minimum_quantity')"
+              />
+              <FormTextField
+                :model-value="item.maximumQuantity ?? undefined"
+                @update:model-value="item.maximumQuantity = $event == null ? null : Number($event)"
+                type="number"
+                step="any"
+                :min="0"
+                :label="$t('items.maximum_quantity')"
+              />
+              <FormTextField
+                :model-value="item.reorderThreshold ?? undefined"
+                @update:model-value="item.reorderThreshold = $event == null ? null : Number($event)"
+                type="number"
+                step="any"
+                :min="0"
+                :label="$t('items.reorder_threshold')"
+              />
             </div>
           </div>
         </BaseCard>
